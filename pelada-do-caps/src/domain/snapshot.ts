@@ -82,3 +82,30 @@ export function sortMatches(matches: readonly Match[], rounds: readonly Round[])
 export function byId<T extends { id: string }>(rows: readonly T[]): Map<string, T> {
   return new Map(rows.map((r) => [r.id, r]));
 }
+
+export interface SnapshotIndex {
+  team: (id: string | null | undefined) => Team | null;
+  player: (id: string | null | undefined) => Player | null;
+  round: (id: string | null | undefined) => Round | null;
+  registration: (playerId: string) => Registration | null;
+}
+
+export function indexSnapshot(s: Snapshot): SnapshotIndex {
+  const teams = byId(s.teams);
+  const players = byId(s.players);
+  const rounds = byId(s.rounds);
+  const regs = new Map(s.registrations.map((r) => [r.player_id, r]));
+  return {
+    team: (id) => (id ? (teams.get(id) ?? null) : null),
+    player: (id) => (id ? (players.get(id) ?? null) : null),
+    round: (id) => (id ? (rounds.get(id) ?? null) : null),
+    registration: (playerId) => regs.get(playerId) ?? null,
+  };
+}
+
+/** Nome da fase/rodada exibido no card da partida. */
+export function matchStageLabel(s: Snapshot, m: Match): string {
+  const round = m.round_id ? s.rounds.find((r) => r.id === m.round_id) : null;
+  if (m.label) return round && round.name !== m.label ? `${round.name} • ${m.label}` : m.label;
+  return round?.name ?? (m.phase === "knockout" ? "Mata-mata" : "Fase classificatória");
+}

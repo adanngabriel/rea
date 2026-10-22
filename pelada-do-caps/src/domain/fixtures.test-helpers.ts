@@ -1,4 +1,5 @@
-import { rulesSchema, type Rules } from "./rules";
+import type { z } from "zod";
+import { rulesSchema } from "./rules";
 import type { Snapshot } from "./snapshot";
 import type { Match, MatchEvent, MatchEventType, Player, Registration, Team } from "./types";
 
@@ -43,6 +44,7 @@ export function registration(p: Player, t: Team | null): Registration {
     shirt_number: null,
     pot: null,
     is_captain: false,
+    updated_at: "2026-10-30T00:00:00.000Z",
   };
 }
 
@@ -89,7 +91,7 @@ export function goals(m: Match, t: Team, n: number): MatchEvent[] {
   return Array.from({ length: n }, () => event(m, "goal", t, null));
 }
 
-export function snapshot(partial: Partial<Snapshot> & { rules?: Partial<Rules> }): Snapshot {
+export function snapshot(partial: Omit<Partial<Snapshot>, "rules"> & { rules?: z.input<typeof rulesSchema> }): Snapshot {
   return {
     edition: {
       id: "ed",

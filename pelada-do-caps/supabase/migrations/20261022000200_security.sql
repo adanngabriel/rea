@@ -74,7 +74,7 @@ $$;
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values
   ('media', 'media', true, 8388608,
-    array['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml', 'image/avif']),
+    array['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif']),
   ('documents', 'documents', true, 20971520,
     array['application/pdf', 'image/jpeg', 'image/png', 'image/webp'])
 on conflict (id) do update

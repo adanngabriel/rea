@@ -1,0 +1,78 @@
+"use server";
+
+import { z } from "zod";
+import { slugify } from "@/lib/format";
+import { adminAction, color, idSchema, must, optionalText, parseForm, requiredText, storageUrl, UserError, type ActionResult } from "./_lib";
+
+const teamSchema = z.object({
+  name: requiredText(60, "Informe o nome do time"),
+  short_name: optionalText(5),
+  slug: optionalText(60),
+  crest_url: storageUrl,
+  photo_url: storageUrl,
+  primary_color: color,
+  secondary_color: color,
+  description: optionalText(1000),
+  sort_order: z.coerce.number().int().min(0).max(999).default(0),
+  captain_player_id: optionalText(36),
+});
+
+export async function saveTeam(id: string | null, form: FormData): Promise<ActionResult> {
+  return adminAction(async ({ db, edition, audit }) => {
+    const ed = await edition();
+    const { captain_player_id, ...data } = parseForm(teamSchema, form);
+    let before: { slug: string; name: string } | null = null;
+    if (id) {
+      idSchema.parse(id);
+      before = must(await db.from("teams").select("slug, name").eq("id", id).single());
+    }
+    // Endereço: mantém o atual, a menos que ainda seja o gerado pelo nome antigo.
+    const slug =
+      slugify(data.slug ?? "") ||
+      (before && before.slug !== slugify(before.name) ? before.slug : slugify(data.name)) ||
+      `time-${Date.now()}`;
+    const row = { ...data, slug, short_name: data.short_name?.toUpperCase() ?? null, edition_id: ed.id };
+    const saved = must(
+      id
+        ? await db.from("teams").update(row).eq("id", id).select("id").single()
+        : await db.from("teams").insert(row).select("id").single(),
+    ) as { id: string };
+
+    if (captain_player_id !== null || id) {
+      // Capitão vive na inscrição do jogador; uma única braçadeira por time.
+      must(await db.from("registrations").update({ is_captain: false }).eq("team_id", saved.id).eq("is_captain", true));
+      if (captain_player_id) {
+        const res = must(
+          await db
+            .from("registrations")
+            .update({ is_captain: true })
+            .eq("team_id", saved.id)
+            .eq("player_id", captain_player_id)
+            .select("id"),
+        );
+        if (!res?.length) throw new UserError("O capitão precisa estar no elenco do time.");
+      }
+    }
+    await audit({
+      action: id ? "team.update" : "team.create",
+      entity: "team",
+      entityId: saved.id,
+      summary: id ? `Time ${before?.name} atualizado${before?.name !== data.name ? ` (agora ${data.name})` : ""}` : `Time ${data.name} criado`,
+      before,
+      after: row,
+    });
+    return { ok: true, message: "Time salvo.", redirectTo: id ? undefined : `/admin/times/${saved.id}` };
+  });
+}
+
+export async function deleteTeam(id: string): Promise<ActionResult> {
+  return adminAction(async ({ db, audit }) => {
+    idSchema.parse(id);
+    const team = must(await db.from("teams").select("name").eq("id", id).single()) as { name: string };
+    const { count } = await db.from("match_events").select("id", { count: "exact", head: true }).eq("team_id", id);
+    if (count) throw new UserError("Este time já tem eventos de súmula. Remova os eventos antes de excluir.");
+    must(await db.from("teams").delete().eq("id", id));
+    await audit({ action: "team.delete", entity: "team", entityId: id, summary: `Time ${team.name} excluído`, before: team });
+    return { ok: true, message: "Time excluído.", redirectTo: "/admin/times" };
+  });
+}

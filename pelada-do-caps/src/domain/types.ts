@@ -70,6 +70,7 @@ export interface Registration {
   shirt_number: number | null;
   pot: string | null;
   is_captain: boolean;
+  updated_at: string;
 }
 
 export interface Match {

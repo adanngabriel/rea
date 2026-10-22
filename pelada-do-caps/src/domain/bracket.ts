@@ -28,12 +28,21 @@ export function sourceLabel(source: BracketSource, slots: readonly BracketSlot[]
   return source.type === "winner" ? `Vencedor ${label}` : `Perdedor ${label}`;
 }
 
+export interface QualificationMark {
+  label: string;
+  /** "direct": vai direto ao jogo decisivo; "qualify": entra em fase anterior. */
+  tone: "direct" | "qualify";
+}
+
 /** Posições da classificação que avançam ao mata-mata, com o destino. */
-export function qualifyingPositions(slots: readonly BracketSlot[]): Map<number, string> {
-  const out = new Map<number, string>();
+export function qualificationMarks(slots: readonly BracketSlot[]): Map<number, QualificationMark> {
+  const referenced = new Set(slots.flatMap((s) => [s.home, s.away]).flatMap((x) => (x.type === "position" ? [] : [x.slot])));
+  const out = new Map<number, QualificationMark>();
   for (const slot of slots) {
     for (const side of [slot.home, slot.away]) {
-      if (side.type === "position") out.set(side.position, slot.label);
+      if (side.type === "position") {
+        out.set(side.position, { label: slot.label, tone: referenced.has(slot.key) ? "qualify" : "direct" });
+      }
     }
   }
   return out;
@@ -125,4 +134,15 @@ export function finalOutcome(s: Snapshot): { championId: string; runnerUpId: str
   const outcome = outcomeOf(final.match, s.events);
   if (outcome.kind !== "decided") return null;
   return { championId: outcome.winnerId, runnerUpId: outcome.loserId, match: final.match };
+}
+
+/** Campeão oficial: premiação cadastrada pela organização ou, na falta
+ * dela, o vencedor da final. */
+export function championOf(s: Snapshot): { championId: string; runnerUpId: string | null } | null {
+  const award = (category: "champion" | "runner_up") => s.awards.find((a) => a.category === category && a.team_id)?.team_id ?? null;
+  const fromFinal = finalOutcome(s);
+  const championId = award("champion") ?? fromFinal?.championId ?? null;
+  if (!championId) return null;
+  const runnerUpId = award("runner_up") ?? (fromFinal?.championId === championId ? fromFinal.runnerUpId : null);
+  return { championId, runnerUpId };
 }
