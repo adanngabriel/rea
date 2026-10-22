@@ -1,6 +1,7 @@
 import "server-only";
 import { redirect } from "next/navigation";
 import { cache } from "react";
+import { supabaseEnv } from "./supabase/env";
 import { serverClient } from "./supabase/server";
 
 export interface AdminSession {
@@ -10,6 +11,7 @@ export interface AdminSession {
 
 /** Usuário logado E cadastrado em public.admins; verificado no servidor. */
 export const getAdmin = cache(async (): Promise<AdminSession | null> => {
+  if (!supabaseEnv()) return null;
   const supabase = await serverClient();
   const { data, error } = await supabase.auth.getUser();
   if (error || !data.user) return null;

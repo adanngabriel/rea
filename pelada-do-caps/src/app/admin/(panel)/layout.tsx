@@ -6,6 +6,9 @@ import { Toaster } from "@/components/admin/toast";
 import { BrandMark } from "@/components/public/brand";
 import { requireAdminPage } from "@/lib/auth";
 
+// O painel depende da sessão do usuário: nunca é pré-renderizado.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = { title: { default: "Painel", template: "%s • Painel" }, robots: { index: false, follow: false } };
 
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {

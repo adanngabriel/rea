@@ -15,6 +15,7 @@ import type {
   Suspension,
   Team,
 } from "@/domain/types";
+import { supabaseEnv } from "../supabase/env";
 import { publicClient } from "../supabase/public";
 
 export class DataError extends Error {
@@ -75,18 +76,21 @@ export async function loadSnapshot(client: SupabaseClient, edition: Edition): Pr
 
 /** Retrato público da edição atual (cacheado e deduplicado por requisição). */
 export const getPublicSnapshot = cache(async (): Promise<Snapshot | null> => {
+  if (!supabaseEnv()) return null;
   const client = publicClient();
   const edition = await loadEdition(client);
   return edition ? loadSnapshot(client, edition) : null;
 });
 
 export const getPublicEditionSnapshot = cache(async (slug: string): Promise<Snapshot | null> => {
+  if (!supabaseEnv()) return null;
   const client = publicClient();
   const edition = await loadEdition(client, slug);
   return edition ? loadSnapshot(client, edition) : null;
 });
 
 export const getAllEditions = cache(async (): Promise<Edition[]> => {
+  if (!supabaseEnv()) return [];
   const result = await publicClient().from("editions").select("*").order("starts_on", { ascending: false });
   return rows<Edition>("edições", result);
 });

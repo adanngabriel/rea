@@ -4,6 +4,11 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseHost = supabaseUrl ? new URL(supabaseUrl) : null;
 
 const nextConfig: NextConfig = {
+  // Este app vive numa subpasta de outro repositório; a raiz do projeto é esta pasta.
+  turbopack: { root: process.cwd() },
+  outputFileTracingRoot: process.cwd(),
+  // Fontes usadas nas imagens de compartilhamento geradas no servidor.
+  outputFileTracingIncludes: { "/**": ["./src/assets/fonts/**"] },
   images: {
     // Escudos, fotos e capas vêm do Supabase Storage.
     remotePatterns: supabaseHost

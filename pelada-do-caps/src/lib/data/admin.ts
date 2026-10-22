@@ -7,14 +7,20 @@ import { requireAdminPage } from "../auth";
 import { serverClient } from "../supabase/server";
 import { DataError, loadEdition, loadSnapshot } from "./tournament";
 
-/** Retrato da edição atual para o painel (sempre fresco, sem cache). */
-export const adminSnapshot = cache(async (): Promise<Snapshot> => {
+/** Retrato da edição atual para o painel (sempre fresco, sem cache), ou
+ * null quando nenhuma edição está marcada como atual. */
+export const adminSnapshotOrNull = cache(async (): Promise<Snapshot | null> => {
   await requireAdminPage();
   const db = await serverClient();
   const edition = await loadEdition(db);
-  if (!edition) redirect("/admin/campeonato?semEdicao=1");
-  return loadSnapshot(db, edition);
+  return edition ? loadSnapshot(db, edition) : null;
 });
+
+export async function adminSnapshot(): Promise<Snapshot> {
+  const s = await adminSnapshotOrNull();
+  if (!s) redirect("/admin/campeonato");
+  return s;
+}
 
 /** Todos os jogadores cadastrados (inscritos ou não na edição atual). */
 export const adminAllPlayers = cache(async (): Promise<Player[]> => {

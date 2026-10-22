@@ -1,5 +1,6 @@
 import "server-only";
 import { cache } from "react";
+import { supabaseEnv } from "../supabase/env";
 import { publicClient } from "../supabase/public";
 import { DataError } from "./tournament";
 
@@ -130,6 +131,7 @@ export const DEFAULT_SITE: SiteSettings = {
 };
 
 export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
+  if (!supabaseEnv()) return DEFAULT_SITE;
   const data = check<SiteSettings | null>(
     "configurações",
     await publicClient().from("site_settings").select("*").eq("id", 1).maybeSingle(),
@@ -138,26 +140,26 @@ export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
 });
 
 export const getNews = cache(async (limit = 50): Promise<NewsItem[]> =>
-  check("notícias", await publicClient().from("news").select("*").order("published_at", { ascending: false }).limit(limit)),
+  !supabaseEnv() ? [] : check("notícias", await publicClient().from("news").select("*").order("published_at", { ascending: false }).limit(limit)),
 );
 
 export const getNewsBySlug = cache(async (slug: string): Promise<NewsItem | null> =>
-  check("notícia", await publicClient().from("news").select("*").eq("slug", slug).maybeSingle()),
+  !supabaseEnv() ? null : check("notícia", await publicClient().from("news").select("*").eq("slug", slug).maybeSingle()),
 );
 
 export const getDocuments = cache(async (): Promise<DocumentItem[]> =>
-  check("documentos", await publicClient().from("documents").select("*").order("published_on", { ascending: false })),
+  !supabaseEnv() ? [] : check("documentos", await publicClient().from("documents").select("*").order("published_on", { ascending: false })),
 );
 
 export const getPressLinks = cache(async (): Promise<PressLink[]> =>
-  check(
+  !supabaseEnv() ? [] : check(
     "matérias",
     await publicClient().from("press_links").select("*").order("published_on", { ascending: false, nullsFirst: false }),
   ),
 );
 
 export const getAlbums = cache(async (): Promise<GalleryAlbum[]> =>
-  check(
+  !supabaseEnv() ? [] : check(
     "álbuns",
     await publicClient()
       .from("gallery_albums")
@@ -168,7 +170,7 @@ export const getAlbums = cache(async (): Promise<GalleryAlbum[]> =>
 );
 
 export const getAlbum = cache(async (id: string): Promise<{ album: GalleryAlbum; items: GalleryItem[] } | null> => {
-  if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
+  if (!supabaseEnv() || !/^[0-9a-f-]{36}$/i.test(id)) return null;
   const client = publicClient();
   const album = check<GalleryAlbum | null>("álbum", await client.from("gallery_albums").select("*").eq("id", id).maybeSingle());
   if (!album) return null;
@@ -180,5 +182,5 @@ export const getAlbum = cache(async (id: string): Promise<{ album: GalleryAlbum;
 });
 
 export const getSponsors = cache(async (): Promise<Sponsor[]> =>
-  check("apoiadores", await publicClient().from("sponsors").select("*").order("sort_order").order("name")),
+  !supabaseEnv() ? [] : check("apoiadores", await publicClient().from("sponsors").select("*").order("sort_order").order("name")),
 );

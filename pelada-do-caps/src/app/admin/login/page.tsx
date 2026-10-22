@@ -7,6 +7,8 @@ import { BrandMark } from "@/components/public/brand";
 import { getAdmin } from "@/lib/auth";
 import { supabaseEnv } from "@/lib/supabase/env";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = { title: "Entrar", robots: { index: false, follow: false } };
 
 export default async function LoginPage() {

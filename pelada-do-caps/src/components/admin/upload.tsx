@@ -8,26 +8,32 @@ import { toast } from "./toast";
 const MAX_DIMENSION = 1600;
 const RASTER = ["image/jpeg", "image/png", "image/webp", "image/avif"];
 
-/** Reduz fotos grandes de celular antes do envio (economiza dados e espaço). */
-async function shrinkImage(file: File, maxDimension: number): Promise<Blob> {
+/** Reduz fotos grandes de celular antes do envio (economiza dados e espaço).
+ * Gera PNG (escudos/logos, preserva transparência) ou JPEG (fotos): formatos
+ * que também funcionam nas imagens de compartilhamento geradas pelo site. */
+async function shrinkImage(file: File, maxDimension: number, keepAlpha: boolean): Promise<Blob> {
   if (!RASTER.includes(file.type)) return file;
   const bitmap = await createImageBitmap(file).catch(() => null);
   if (!bitmap) return file;
   const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
-  if (scale === 1 && file.size < 900_000) return file;
+  const portable = file.type === "image/png" || file.type === "image/jpeg";
+  if (scale === 1 && file.size < 900_000 && portable) return file;
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(bitmap.width * scale);
   canvas.height = Math.round(bitmap.height * scale);
   canvas.getContext("2d")!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/webp", 0.86));
-  return blob && blob.size < file.size ? blob : file;
+  const type = keepAlpha ? "image/png" : "image/jpeg";
+  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, type, 0.86));
+  return blob && (blob.size < file.size || file.type === "image/webp" || file.type === "image/avif") ? blob : file;
 }
 
 export async function uploadToStorage(file: File, bucket: "media" | "documents", folder: string, maxDimension = MAX_DIMENSION): Promise<string> {
   const supabase = browserClient();
   if (!supabase) throw new Error("Supabase não configurado.");
-  const body = file.type.startsWith("image/") ? await shrinkImage(file, maxDimension) : file;
-  const ext = body.type === "image/webp" ? "webp" : (file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "bin");
+  const keepAlpha = /^(escudos|identidade|apoiadores)/.test(folder);
+  const body = file.type.startsWith("image/") && file.type !== "image/gif" ? await shrinkImage(file, maxDimension, keepAlpha) : file;
+  const EXT: Record<string, string> = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp", "image/avif": "avif", "image/gif": "gif", "application/pdf": "pdf" };
+  const ext = EXT[body.type] ?? (file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "bin");
   const path = `${folder}/${crypto.randomUUID()}.${ext}`;
   const { error } = await supabase.storage.from(bucket).upload(path, body, {
     contentType: body.type || file.type,
