@@ -27,3 +27,6 @@ grant usage on schema storage to anon, authenticated;
 grant all on storage.objects to anon, authenticated;
 
 create publication supabase_realtime;
+
+create schema if not exists extensions;
+grant usage on schema extensions to anon, authenticated, service_role;

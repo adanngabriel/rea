@@ -8,12 +8,21 @@ interface Move {
   team_id: string | null;
 }
 
-async function names(ctx: ActionContext, playerId: string, teamIds: (string | null)[]) {
-  const player = must(await ctx.db.from("players").select("name, nickname").eq("id", playerId).single()) as { name: string; nickname: string | null };
-  const ids = teamIds.filter((t): t is string => Boolean(t));
-  const teams = ids.length ? (must(await ctx.db.from("teams").select("id, name").in("id", ids)) as { id: string; name: string }[]) : [];
+/** Nome do jogador (pela inscrição) e de todos os times, numa única rodada de consultas. */
+async function draftLookup(ctx: ActionContext, editionId: string, playerId: string) {
+  const [regRes, teamsRes] = await Promise.all([
+    ctx.db
+      .from("registrations")
+      .select("id, team_id, player:players(name, nickname)")
+      .eq("edition_id", editionId)
+      .eq("player_id", playerId)
+      .maybeSingle(),
+    ctx.db.from("teams").select("id, name").eq("edition_id", editionId),
+  ]);
+  const reg = must(regRes) as { id: string; team_id: string | null; player: { name: string; nickname: string | null } | null } | null;
+  const teams = must(teamsRes) as { id: string; name: string }[];
   const team = (id: string | null) => (id ? (teams.find((t) => t.id === id)?.name ?? "time") : "Sem time");
-  return { player: player.nickname || player.name, team };
+  return { reg, player: reg?.player ? reg.player.nickname || reg.player.name : "Jogador", team };
 }
 
 /** Coloca, move ou remove um jogador de um time (um passo do sorteio). */
@@ -22,13 +31,11 @@ export async function assignPlayer(playerId: string, teamId: string | null): Pro
     idSchema.parse(playerId);
     if (teamId) idSchema.parse(teamId);
     const ed = await ctx.edition();
-    const reg = must(
-      await ctx.db.from("registrations").select("id, team_id").eq("edition_id", ed.id).eq("player_id", playerId).maybeSingle(),
-    ) as { id: string; team_id: string | null } | null;
+    const n = await draftLookup(ctx, ed.id, playerId);
+    const reg = n.reg;
     if (!reg) throw new UserError("Jogador não está inscrito nesta edição.");
     if (reg.team_id === teamId) return { ok: true, message: "Nada mudou." };
     must(await ctx.db.from("registrations").update({ team_id: teamId }).eq("id", reg.id));
-    const n = await names(ctx, playerId, [reg.team_id, teamId]);
     const summary = teamId
       ? reg.team_id
         ? `${n.player} movido de ${n.team(reg.team_id)} para ${n.team(teamId)}`

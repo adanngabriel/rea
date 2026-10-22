@@ -36,57 +36,47 @@ export async function loadEdition(client: SupabaseClient, slug?: string): Promis
   return (data as Edition | null) ?? null;
 }
 
-/** Carrega o retrato completo de uma edição (ver domain/snapshot.ts). */
-export async function loadSnapshot(client: SupabaseClient, edition: Edition): Promise<Snapshot> {
-  const [rounds, teams, registrations, matches, suspensions, awards] = await Promise.all([
-    client.from("rounds").select("*").eq("edition_id", edition.id).order("sort_order"),
-    client.from("teams").select("*").eq("edition_id", edition.id).order("sort_order").order("name"),
-    client.from("registrations").select("*").eq("edition_id", edition.id),
-    client.from("matches").select("*").eq("edition_id", edition.id),
-    client.from("suspensions").select("*").eq("edition_id", edition.id).order("created_at"),
-    client.from("awards").select("*").eq("edition_id", edition.id).order("sort_order"),
-  ]);
-  const regs = rows<Registration>("inscrições", registrations);
-  const matchRows = rows<Match>("partidas", matches);
-  const matchIds = matchRows.map((m) => m.id);
-  const playerIds = [...new Set(regs.map((r) => r.player_id))];
-  const [players, events, lineups] = await Promise.all([
-    playerIds.length ? client.from("players").select("*").in("id", playerIds) : { data: [], error: null },
-    matchIds.length
-      ? client.from("match_events").select("*").in("match_id", matchIds).order("minute", { nullsFirst: false }).order("created_at")
-      : { data: [], error: null },
-    matchIds.length ? client.from("match_lineups").select("*").in("match_id", matchIds) : { data: [], error: null },
-  ]);
-  const parsedRules = parseRules(edition.rules);
+interface SnapshotRow {
+  edition: Edition;
+  rounds: Round[];
+  teams: Team[];
+  registrations: Registration[];
+  players: Player[];
+  matches: Match[];
+  events: MatchEvent[];
+  lineups: MatchLineup[];
+  suspensions: Suspension[];
+  awards: Award[];
+}
+
+/**
+ * Carrega o retrato completo de uma edição (ver domain/snapshot.ts) numa
+ * única chamada ao banco (função edition_snapshot): o servidor do site e o
+ * banco ficam em regiões diferentes, e cada ida ao banco custa caro.
+ * Sem `slug`, usa a edição atual. Retorna null se a edição não existe.
+ */
+export async function loadSnapshot(client: SupabaseClient, slug?: string): Promise<Snapshot | null> {
+  const { data, error } = await client.rpc("edition_snapshot", { p_slug: slug ?? null });
+  if (error) throw new DataError("campeonato", error);
+  if (!data) return null;
+  const row = data as SnapshotRow;
+  const parsedRules = parseRules(row.edition.rules);
   return {
-    edition,
+    ...row,
     rules: parsedRules.rules,
     rulesIssues: parsedRules.ok ? [] : parsedRules.issues,
-    rounds: rows<Round>("rodadas", rounds),
-    teams: rows<Team>("times", teams),
-    players: rows<Player>("jogadores", players),
-    registrations: regs,
-    matches: matchRows,
-    events: rows<MatchEvent>("eventos", events),
-    lineups: rows<MatchLineup>("escalações", lineups),
-    suspensions: rows<Suspension>("suspensões", suspensions),
-    awards: rows<Award>("premiações", awards),
   };
 }
 
 /** Retrato público da edição atual (cacheado e deduplicado por requisição). */
 export const getPublicSnapshot = cache(async (): Promise<Snapshot | null> => {
   if (!supabaseEnv()) return null;
-  const client = publicClient();
-  const edition = await loadEdition(client);
-  return edition ? loadSnapshot(client, edition) : null;
+  return loadSnapshot(publicClient());
 });
 
 export const getPublicEditionSnapshot = cache(async (slug: string): Promise<Snapshot | null> => {
   if (!supabaseEnv()) return null;
-  const client = publicClient();
-  const edition = await loadEdition(client, slug);
-  return edition ? loadSnapshot(client, edition) : null;
+  return loadSnapshot(publicClient(), slug);
 });
 
 export const getAllEditions = cache(async (): Promise<Edition[]> => {

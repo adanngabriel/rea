@@ -1,5 +1,6 @@
 import "server-only";
 import { planBracketSync } from "@/domain/bracket";
+import { parseRules } from "@/domain/rules";
 import { loadSnapshot } from "@/lib/data/tournament";
 import { must, type ActionContext } from "./_lib";
 
@@ -11,7 +12,10 @@ import { must, type ActionContext } from "./_lib";
  */
 export async function syncBracket(ctx: ActionContext): Promise<number> {
   const edition = await ctx.edition();
-  const snapshot = await loadSnapshot(ctx.db, edition);
+  // Sem mata-mata configurado não há o que sincronizar (evita uma ida ao banco).
+  if (parseRules(edition.rules).rules.knockout.slots.length === 0) return 0;
+  const snapshot = await loadSnapshot(ctx.db, edition.slug);
+  if (!snapshot) return 0;
   const plan = planBracketSync(snapshot);
   for (const c of plan.create) {
     const round = c.slot.roundId ? snapshot.rounds.find((r) => r.id === c.slot.roundId) : null;

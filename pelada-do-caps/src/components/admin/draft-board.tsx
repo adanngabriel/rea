@@ -1,7 +1,7 @@
 "use client";
 
 import { Loader2, Search, Shuffle, Undo2, X } from "lucide-react";
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useOptimistic, useState, useTransition } from "react";
 import { assignPlayer, autoDraft, undoLastDraft } from "@/actions/draft";
 import type { ActionResult } from "@/actions/_lib";
 import { toast } from "./toast";
@@ -44,8 +44,12 @@ function PlayerTag({ p }: { p: DraftPlayer }) {
  * jogador sorteado, toca no time correspondente. Tudo é salvo na hora e
  * aparece na página pública /sorteio sem recarregar.
  */
-export function DraftBoard({ players, teams, maxPerTeam }: { players: DraftPlayer[]; teams: DraftTeam[]; maxPerTeam: number | null }) {
+export function DraftBoard({ players: serverPlayers, teams, maxPerTeam }: { players: DraftPlayer[]; teams: DraftTeam[]; maxPerTeam: number | null }) {
   const [pending, start] = useTransition();
+  // O jogador muda de time na tela no mesmo instante; o servidor confirma em seguida.
+  const [players, moveOptimistic] = useOptimistic(serverPlayers, (list, move: { id: string; teamId: string | null }) =>
+    list.map((p) => (p.id === move.id ? { ...p, teamId: move.teamId } : p)),
+  );
   const [busyId, setBusyId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [position, setPosition] = useState("");
@@ -64,9 +68,10 @@ export function DraftBoard({ players, teams, maxPerTeam }: { players: DraftPlaye
   );
   const totalUnassigned = players.filter((p) => !p.teamId).length;
 
-  const run = (id: string | null, action: () => Promise<ActionResult>) => {
+  const run = (id: string | null, action: () => Promise<ActionResult>, move?: { id: string; teamId: string | null }) => {
     setBusyId(id);
     start(async () => {
+      if (move) moveOptimistic(move);
       const result = await action();
       setBusyId(null);
       if (result.ok) toast("success", result.message ?? "Salvo.");
@@ -142,8 +147,7 @@ export function DraftBoard({ players, teams, maxPerTeam }: { players: DraftPlaye
                       <button
                         key={t.id}
                         type="button"
-                        disabled={pending}
-                        onClick={() => run(p.id, () => assignPlayer(p.id, t.id))}
+                        onClick={() => run(p.id, () => assignPlayer(p.id, t.id), { id: p.id, teamId: t.id })}
                         className="inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition-colors hover:bg-surface-3 disabled:opacity-50"
                         style={{ borderColor: t.color }}
                       >
@@ -191,8 +195,7 @@ export function DraftBoard({ players, teams, maxPerTeam }: { players: DraftPlaye
                           aria-label={`Mover ${label(p)}`}
                           className="input w-auto max-w-32 py-1 text-xs"
                           value={t.id}
-                          disabled={pending}
-                          onChange={(e) => run(p.id, () => assignPlayer(p.id, e.target.value || null))}
+                          onChange={(e) => run(p.id, () => assignPlayer(p.id, e.target.value || null), { id: p.id, teamId: e.target.value || null })}
                         >
                           {teams.map((o) => (
                             <option key={o.id} value={o.id}>
@@ -203,8 +206,7 @@ export function DraftBoard({ players, teams, maxPerTeam }: { players: DraftPlaye
                         <button
                           type="button"
                           className="btn-ghost btn-sm px-2"
-                          disabled={pending}
-                          onClick={() => run(p.id, () => assignPlayer(p.id, null))}
+                          onClick={() => run(p.id, () => assignPlayer(p.id, null), { id: p.id, teamId: null })}
                           aria-label={`Remover ${label(p)} do ${t.name}`}
                         >
                           <X className="size-4" aria-hidden />

@@ -63,8 +63,12 @@ const matchSchema = z
 
 async function loadMatchContext(ctx: ActionContext, matchId: string) {
   idSchema.parse(matchId);
-  const match = must(await ctx.db.from("matches").select("*").eq("id", matchId).single()) as Match;
-  const events = must(await ctx.db.from("match_events").select("*").eq("match_id", matchId)) as MatchEvent[];
+  const [matchRes, eventsRes] = await Promise.all([
+    ctx.db.from("matches").select("*").eq("id", matchId).single(),
+    ctx.db.from("match_events").select("*").eq("match_id", matchId),
+  ]);
+  const match = must(matchRes) as Match;
+  const events = must(eventsRes) as MatchEvent[];
   const ids = [match.home_team_id, match.away_team_id].filter(Boolean) as string[];
   const teams = ids.length ? (must(await ctx.db.from("teams").select("id, name").in("id", ids)) as { id: string; name: string }[]) : [];
   const name = (id: string | null) => teams.find((t) => t.id === id)?.name ?? "A definir";

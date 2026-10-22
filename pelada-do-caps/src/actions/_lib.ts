@@ -1,10 +1,10 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { revalidatePath, updateTag } from "next/cache";
+import { after } from "next/server";
 import { z } from "zod";
 import type { Edition } from "@/domain/types";
 import { getAdmin, type AdminSession } from "@/lib/auth";
-import { loadEdition } from "@/lib/data/tournament";
 import { PUBLIC_DATA_TAG } from "@/lib/supabase/public";
 import { serverClient } from "@/lib/supabase/server";
 
@@ -67,18 +67,19 @@ export async function adminAction(run: (ctx: ActionContext) => Promise<ActionRes
   const admin = await getAdmin();
   if (!admin) return { ok: false, error: "Sua sessão expirou. Entre novamente." };
   const db = await serverClient();
-  let edition: Edition | null = null;
+  const edition = admin.edition;
   const ctx: ActionContext = {
     db,
     admin,
     edition: async () => {
-      edition ??= await loadEdition(db);
       if (!edition) throw new UserError("Nenhuma edição marcada como atual. Configure em Campeonato → Edições.");
       return edition;
     },
+    // O histórico é gravado depois da resposta: o administrador não espera por ele.
     audit: async (entry) => {
       const editionId = entry.editionId === undefined ? (edition?.id ?? null) : entry.editionId;
-      const { error } = await db.from("audit_logs").insert({
+      after(async () => {
+        const { error } = await db.from("audit_logs").insert({
         edition_id: editionId,
         actor_id: admin.userId,
         actor_email: admin.email,
@@ -87,9 +88,10 @@ export async function adminAction(run: (ctx: ActionContext) => Promise<ActionRes
         entity_id: entry.entityId ?? null,
         summary: entry.summary,
         before: entry.before ?? null,
-        after: entry.after ?? null,
+          after: entry.after ?? null,
+        });
+        if (error) console.error("Falha ao registrar auditoria", error);
       });
-      if (error) console.error("Falha ao registrar auditoria", error);
     },
   };
   try {

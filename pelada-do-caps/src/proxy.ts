@@ -22,7 +22,9 @@ export async function proxy(request: NextRequest) {
       },
     },
   });
-  const { data } = await supabase.auth.getUser();
+  // getClaims confere o token localmente (sem ida ao servidor de login).
+  const { data: auth } = await supabase.auth.getClaims();
+  const data = { user: auth?.claims?.sub ? auth.claims : null };
   const isLogin = request.nextUrl.pathname === "/admin/login" || request.nextUrl.pathname === "/admin/primeiro-acesso";
   if (!data.user && !isLogin) {
     return NextResponse.redirect(new URL("/admin/login", request.url));

@@ -57,11 +57,21 @@ export async function savePlayer(id: string | null, form: FormData): Promise<Act
         : await db.from("players").insert(playerRow).select("id").single(),
     ) as { id: string };
 
-    if (data.notes) must(await db.from("player_admin_notes").upsert({ player_id: saved.id, notes: data.notes, updated_at: new Date().toISOString() }));
-    else must(await db.from("player_admin_notes").delete().eq("player_id", saved.id));
-
-    if (data.registered) {
-      if (data.is_captain && !data.team_id) throw new UserError("Para ser capitão, o jogador precisa ter um time.", { is_captain: "Escolha um time" });
+    if (data.registered && data.is_captain && !data.team_id) {
+      throw new UserError("Para ser capitão, o jogador precisa ter um time.", { is_captain: "Escolha um time" });
+    }
+    // Observações e inscrição são independentes: gravadas em paralelo.
+    const saveNotes = async () =>
+      must(
+        data.notes
+          ? await db.from("player_admin_notes").upsert({ player_id: saved.id, notes: data.notes, updated_at: new Date().toISOString() })
+          : await db.from("player_admin_notes").delete().eq("player_id", saved.id),
+      );
+    const saveRegistration = async () => {
+      if (!data.registered) {
+        must(await db.from("registrations").delete().eq("edition_id", ed.id).eq("player_id", saved.id));
+        return;
+      }
       if (data.is_captain) {
         must(await db.from("registrations").update({ is_captain: false }).eq("team_id", data.team_id).neq("player_id", saved.id));
       }
@@ -78,9 +88,8 @@ export async function savePlayer(id: string | null, form: FormData): Promise<Act
           { onConflict: "edition_id,player_id" },
         ),
       );
-    } else {
-      must(await db.from("registrations").delete().eq("edition_id", ed.id).eq("player_id", saved.id));
-    }
+    };
+    await Promise.all([saveNotes(), saveRegistration()]);
     await audit({
       action: id ? "player.update" : "player.create",
       entity: "player",
@@ -122,21 +131,26 @@ export async function bulkAddPlayers(form: FormData): Promise<ActionResult> {
       .map((l) => l.split(/[;\t]/).map((c) => c.trim()))
       .filter((cols) => cols[0]);
     if (rows.length > 300) throw new UserError("Envie no máximo 300 jogadores por vez.");
-    let created = 0;
-    for (const [name, nickname, position, pot] of rows) {
+    // Tudo em lote: uma consulta para os endereços já usados e uma inserção
+    // para jogadores e outra para inscrições (em vez de 3 idas por jogador).
+    const taken = new Set(((must(await db.from("players").select("slug")) ?? []) as { slug: string }[]).map((r) => r.slug));
+    const players = rows.map(([name, nickname, position]) => {
       if (name.length > 80) throw new UserError(`Nome muito longo: ${name.slice(0, 30)}…`);
       const pos = position ? (POSITION_ALIASES[position.toLowerCase()] ?? null) : null;
-      const slug = await uniqueSlug(db, "players", slugify(name), null);
-      const player = must(
-        await db
-          .from("players")
-          .insert({ name, nickname: nickname || null, slug, position: pos, is_goalkeeper: pos === "GOL" })
-          .select("id")
-          .single(),
-      ) as { id: string };
-      must(await db.from("registrations").insert({ edition_id: ed.id, player_id: player.id, pot: pot || null }));
-      created++;
-    }
+      const base = slugify(name) || "jogador";
+      let slug = base;
+      for (let i = 2; taken.has(slug); i++) slug = `${base}-${i}`;
+      taken.add(slug);
+      return { name, nickname: nickname || null, slug, position: pos, is_goalkeeper: pos === "GOL" };
+    });
+    const inserted = must(await db.from("players").insert(players).select("id, slug")) as { id: string; slug: string }[];
+    const idBySlug = new Map(inserted.map((r) => [r.slug, r.id]));
+    must(
+      await db.from("registrations").insert(
+        players.map((p, i) => ({ edition_id: ed.id, player_id: idBySlug.get(p.slug)!, pot: rows[i][3] || null })),
+      ),
+    );
+    const created = inserted.length;
     await audit({ action: "player.bulk", entity: "player", summary: `${created} jogadores cadastrados em lote` });
     return { ok: true, message: `${created} jogadores cadastrados.` };
   });

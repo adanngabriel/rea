@@ -5,15 +5,14 @@ import type { Snapshot } from "@/domain/snapshot";
 import type { Player } from "@/domain/types";
 import { requireAdminPage } from "../auth";
 import { serverClient } from "../supabase/server";
-import { DataError, loadEdition, loadSnapshot } from "./tournament";
+import { DataError, loadSnapshot } from "./tournament";
 
 /** Retrato da edição atual para o painel (sempre fresco, sem cache), ou
  * null quando nenhuma edição está marcada como atual. */
 export const adminSnapshotOrNull = cache(async (): Promise<Snapshot | null> => {
   await requireAdminPage();
   const db = await serverClient();
-  const edition = await loadEdition(db);
-  return edition ? loadSnapshot(db, edition) : null;
+  return loadSnapshot(db);
 });
 
 export async function adminSnapshot(): Promise<Snapshot> {
