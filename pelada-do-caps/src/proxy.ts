@@ -23,7 +23,7 @@ export async function proxy(request: NextRequest) {
     },
   });
   const { data } = await supabase.auth.getUser();
-  const isLogin = request.nextUrl.pathname === "/admin/login";
+  const isLogin = request.nextUrl.pathname === "/admin/login" || request.nextUrl.pathname === "/admin/primeiro-acesso";
   if (!data.user && !isLogin) {
     return NextResponse.redirect(new URL("/admin/login", request.url));
   }

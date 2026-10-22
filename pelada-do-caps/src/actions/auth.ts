@@ -46,3 +46,28 @@ export async function changePassword(form: FormData): Promise<ActionResult> {
     return { ok: true, message: "Senha alterada." };
   });
 }
+
+const firstAccessSchema = z
+  .object({
+    token: z.string().min(20).max(200),
+    password: z.string().min(10, "Use pelo menos 10 caracteres").max(72),
+    confirm: z.string(),
+  })
+  .refine((v) => v.password === v.confirm, { message: "As senhas não conferem", path: ["confirm"] });
+
+/** Primeiro acesso: o administrador define a própria senha com o código de uso único. */
+export async function claimFirstAccess(form: FormData): Promise<ActionResult> {
+  const parsed = firstAccessSchema.safeParse({ token: form.get("token"), password: form.get("password"), confirm: form.get("confirm") });
+  if (!parsed.success) {
+    const fieldErrors = Object.fromEntries(parsed.error.issues.map((i) => [i.path.join("."), i.message]));
+    return { ok: false, error: "Confira os campos destacados.", fieldErrors };
+  }
+  const supabase = await serverClient();
+  const { data: email, error } = await supabase.rpc("claim_admin_setup", { token: parsed.data.token, new_password: parsed.data.password });
+  if (error || typeof email !== "string") {
+    return { ok: false, error: error?.message.includes("expirado") ? "Este link já foi usado ou expirou." : "Não foi possível definir a senha." };
+  }
+  const login = await supabase.auth.signInWithPassword({ email, password: parsed.data.password });
+  if (login.error) return { ok: true, message: "Senha definida! Entre com seu e-mail e a nova senha.", redirectTo: "/admin/login" };
+  return { ok: true, message: "Senha definida. Bem-vindo ao painel!", redirectTo: "/admin" };
+}
