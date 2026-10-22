@@ -73,7 +73,7 @@ export function StandingsTable({
                       <Crest team={row.team} size={26} />
                       <Link
                         href={`/times/${row.team.slug}`}
-                        className="max-w-[8.5rem] truncate font-semibold hover:text-accent sm:max-w-none"
+                        className="-my-2 max-w-[8.5rem] truncate py-2 font-semibold hover:text-accent sm:max-w-none"
                       >
                         {row.team.name}
                       </Link>

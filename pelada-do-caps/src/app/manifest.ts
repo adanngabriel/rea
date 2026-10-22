@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Jogos, classificação e artilharia do Torneio da Pelada do Caps.",
     start_url: "/",
     display: "standalone",
-    background_color: "#070b09",
-    theme_color: "#070b09",
+    background_color: "#050913",
+    theme_color: "#050913",
     lang: "pt-BR",
     icons: [{ src: "/icon.svg", sizes: "any", type: "image/svg+xml" }],
   };

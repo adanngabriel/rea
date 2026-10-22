@@ -36,7 +36,7 @@ export function SiteFooter({ site, sponsors, editionName }: { site: SiteSettings
           </div>
         </section>
       ) : null}
-      <div className="container-page grid gap-8 py-10 sm:grid-cols-[1.4fr_1fr_1fr]">
+      <div className="container-page grid gap-8 py-8 sm:grid-cols-[1.4fr_1fr_1fr] sm:py-10">
         <div>
           <p className="font-display text-2xl font-extrabold uppercase">{editionName}</p>
           {site.tagline ? <p className="mt-1 text-sm text-muted">{site.tagline}</p> : null}
@@ -53,7 +53,7 @@ export function SiteFooter({ site, sponsors, editionName }: { site: SiteSettings
             ) : null}
           </div>
         </div>
-        <nav aria-label="Rodapé — competição">
+        <nav aria-label="Rodapé — competição" className="hidden sm:block">
           <ul className="space-y-2 text-sm text-muted">
             {PRIMARY_NAV.slice(1).map((i) => (
               <li key={i.href}>
@@ -64,7 +64,7 @@ export function SiteFooter({ site, sponsors, editionName }: { site: SiteSettings
             ))}
           </ul>
         </nav>
-        <nav aria-label="Rodapé — mais">
+        <nav aria-label="Rodapé — mais" className="hidden sm:block">
           <ul className="space-y-2 text-sm text-muted">
             {MORE_NAV.map((i) => (
               <li key={i.href}>
@@ -79,7 +79,7 @@ export function SiteFooter({ site, sponsors, editionName }: { site: SiteSettings
       <div className="border-t border-line">
         <div className="container-page flex flex-wrap items-center justify-between gap-3 py-5 text-xs text-subtle">
           <p>© {editionName}. Todos os direitos reservados.</p>
-          <Link href="/admin" className="inline-flex items-center gap-1.5 hover:text-muted" rel="nofollow">
+          <Link href="/admin" className="inline-flex min-h-10 items-center gap-1.5 hover:text-muted" rel="nofollow">
             <Lock className="size-3" aria-hidden /> Área da organização
           </Link>
         </div>

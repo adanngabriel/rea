@@ -31,11 +31,11 @@ export default async function StandingsPage() {
           </EmptyState>
         ) : (
           <>
-            <div className="flex justify-end">
+            <StandingsTable rows={rows} marks={marks} />
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <QualificationLegend marks={marks} />
               <ShareButton title="Classificação" text={`Classificação — ${s.edition.name}`} path="/classificacao" />
             </div>
-            <StandingsTable rows={rows} marks={marks} />
-            <QualificationLegend marks={marks} />
             {rows.some((r) => r.unresolvedTie) ? (
               <p className="text-sm text-warning">* Empate não resolvido pelos critérios configurados; a organização definirá a ordem.</p>
             ) : null}

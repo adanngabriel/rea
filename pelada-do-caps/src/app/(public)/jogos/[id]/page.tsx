@@ -165,7 +165,7 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
         </div>
       </header>
 
-      <div className="container-page grid gap-8 py-8 lg:grid-cols-[1.2fr_1fr]">
+      <div className="container-page grid grid-cols-1 gap-8 py-8 lg:grid-cols-[1.2fr_1fr]">
         <section aria-labelledby="h-lances">
           <h2 id="h-lances" className="mb-4 font-display text-2xl font-extrabold uppercase">
             Lances da partida

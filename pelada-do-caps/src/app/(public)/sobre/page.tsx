@@ -25,7 +25,7 @@ export default async function AboutPage() {
       <PageHeader title="Sobre o torneio" eyebrow={edition.name}>
         {edition.description}
       </PageHeader>
-      <div className="container-page grid gap-8 py-8 lg:grid-cols-[1.5fr_1fr]">
+      <div className="container-page grid grid-cols-1 gap-8 py-8 lg:grid-cols-[1.5fr_1fr]">
         <div className="space-y-6">
           {edition.about ? <Markdown source={edition.about} /> : <p className="text-muted">Mais informações sobre o torneio serão publicadas em breve.</p>}
           <section aria-labelledby="h-calendario">

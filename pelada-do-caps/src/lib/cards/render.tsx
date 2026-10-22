@@ -17,13 +17,13 @@ export const FORMATS = {
 export type CardFormat = keyof typeof FORMATS;
 
 export const C = {
-  bg: "#070b09",
-  surface: "#0e1411",
-  surface2: "#141c18",
-  line: "#233029",
-  ink: "#eef4f0",
-  muted: "#9aaba1",
-  accent: "#b9f53d",
+  bg: "#050913",
+  surface: "#0a1324",
+  surface2: "#0f1b31",
+  line: "#1b2a45",
+  ink: "#eef3fb",
+  muted: "#96a5c0",
+  accent: "#4aa6ef",
   gold: "#f5c84b",
 };
 
@@ -104,7 +104,7 @@ export function Frame({ format, eyebrow, title, children, footer }: { format: Ca
         height,
         display: "flex",
         flexDirection: "column",
-        background: `radial-gradient(circle at 15% 0%, #1d3a12 0%, ${C.bg} 55%)`,
+        background: `radial-gradient(circle at 15% 0%, #0b3a78 0%, ${C.bg} 55%)`,
         color: C.ink,
         fontFamily: "Barlow Condensed",
         padding: pad,

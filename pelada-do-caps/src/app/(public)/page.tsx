@@ -75,19 +75,19 @@ export default async function HomePage() {
         {edition.hero_image_url ? (
           <Image src={edition.hero_image_url} alt="" fill priority sizes="100vw" className="object-cover opacity-30" />
         ) : null}
-        <div className="pitch-lines absolute inset-0" aria-hidden />
+        <div className="nerazzurri absolute inset-0 opacity-70" aria-hidden />
         <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/70 to-transparent" aria-hidden />
-        <div className="container-page relative py-12 sm:py-20">
-          <p className="eyebrow mb-3 text-accent">{edition.season ? `Temporada ${edition.season}` : "Torneio oficial"}</p>
-          <h1 className="max-w-3xl font-display text-5xl font-extrabold uppercase leading-[0.9] sm:text-7xl lg:text-8xl">
+        <div className="container-page relative py-7 sm:py-20">
+          <p className="eyebrow mb-2 text-accent sm:mb-3">{edition.season ? `Temporada ${edition.season}` : "Torneio oficial"}</p>
+          <h1 className="max-w-3xl font-display text-[2.6rem] font-extrabold uppercase leading-[0.9] sm:text-7xl lg:text-8xl">
             {edition.name}
           </h1>
-          <p className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-lg text-ink/80">
+          <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-base text-ink/80 sm:mt-4 sm:text-lg">
             {edition.venue ? <span>{edition.venue}</span> : null}
             {edition.venue && dates ? <span className="text-accent" aria-hidden>•</span> : null}
             {dates ? <span className="tabular">{dates}</span> : null}
           </p>
-          <div className="mt-7 flex flex-wrap gap-3">
+          <div className="mt-6 hidden flex-wrap gap-3 sm:flex">
             <Link href="/jogos" className="btn-primary">
               Tabela de jogos
             </Link>
@@ -98,7 +98,23 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <div className="container-page space-y-12 py-8 sm:py-12">
+      {/* Atalhos rápidos no celular: rolam para o lado, logo abaixo do topo. */}
+      <nav aria-label="Atalhos" className="border-b border-line sm:hidden">
+        <ul className="flex gap-2 overflow-x-auto px-4 py-3 [scrollbar-width:none]">
+          {SHORTCUTS.map(({ href, label, icon: Icon }) => (
+            <li key={href} className="shrink-0">
+              <Link href={href} className="flex min-h-11 items-center gap-2 rounded-full border border-line bg-surface px-4 text-sm font-semibold active:scale-95 active:bg-surface-2">
+                <Icon className="size-4 text-accent" aria-hidden />
+                {label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <div className="container-page space-y-10 py-6 sm:space-y-12 sm:py-12">
+        {/* Antes do torneio a contagem é o destaque; depois, o jogo da vez. */}
+        {!featured && countdown ? <Countdown target={countdown.at} kind={countdown.kind} /> : null}
         {featured ? (
           <FeaturedMatch s={s} match={featured} />
         ) : (
@@ -106,10 +122,9 @@ export default async function HomePage() {
             Os confrontos e horários serão divulgados pela organização.
           </EmptyState>
         )}
+        {featured && countdown ? <Countdown target={countdown.at} kind={countdown.kind} /> : null}
 
-        {countdown ? <Countdown target={countdown.at} kind={countdown.kind} /> : null}
-
-        <div className="grid gap-10 lg:grid-cols-[1.3fr_1fr]">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.3fr_1fr] [&>*]:min-w-0">
           <section aria-labelledby="h-classificacao">
             <SectionHeader title="Classificação" href="/classificacao" linkLabel="Completa" />
             <h2 id="h-classificacao" className="sr-only">
@@ -128,7 +143,7 @@ export default async function HomePage() {
           </section>
           <section>
             <SectionHeader title="Destaques" href="/estatisticas" />
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+            <div className="rail sm:grid-cols-2 lg:grid-cols-1">
               <HighlightCard label="Artilheiro" entry={scorer?.entry} value={scorer?.value} unit="gols" empty="Nenhum gol registrado ainda." />
               <HighlightCard label="Líder em assistências" entry={assister?.entry} value={assister?.value} unit="assist." empty="Nenhuma assistência registrada." />
               <HighlightCard label="Mais vezes craque do jogo" entry={mvp?.entry} value={mvp?.value} unit="MVPs" empty="Nenhum craque do jogo escolhido." />
@@ -140,7 +155,7 @@ export default async function HomePage() {
         <section>
           <SectionHeader title="Últimos resultados" href="/jogos?status=encerrados" />
           {results.length ? (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rail sm:grid-cols-2 lg:grid-cols-4">
               {results.map((m) => (
                 <MatchCard key={m.id} s={s} match={m} />
               ))}
@@ -155,7 +170,7 @@ export default async function HomePage() {
         {upcoming.length ? (
           <section>
             <SectionHeader title="Próximos jogos" href="/jogos" />
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rail sm:grid-cols-2 lg:grid-cols-4">
               {upcoming.map((m) => (
                 <MatchCard key={m.id} s={s} match={m} />
               ))}
@@ -166,7 +181,7 @@ export default async function HomePage() {
         <section>
           <SectionHeader title="Notícias e comunicados" href="/noticias" />
           {news.length ? (
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="rail md:grid-cols-3">
               {news.map((n) => (
                 <NewsCard key={n.id} item={n} />
               ))}
@@ -178,7 +193,7 @@ export default async function HomePage() {
           )}
         </section>
 
-        <section aria-labelledby="h-atalhos">
+        <section aria-labelledby="h-atalhos" className="hidden sm:block">
           <h2 id="h-atalhos" className="sr-only">
             Atalhos
           </h2>

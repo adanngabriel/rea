@@ -11,7 +11,7 @@ export function Chips({ items, label }: { items: { href: string; label: string; 
               href={i.href}
               scroll={false}
               aria-current={i.active ? "page" : undefined}
-              className="inline-flex min-h-9 items-center rounded-full border border-line px-4 text-sm font-medium text-muted transition-colors hover:text-ink aria-[current=page]:border-accent aria-[current=page]:bg-accent aria-[current=page]:text-accent-ink"
+              className="inline-flex min-h-9 items-center rounded-full border border-line px-4 text-sm font-medium text-muted transition-colors hover:text-ink aria-[current=page]:border-brand aria-[current=page]:bg-brand aria-[current=page]:text-white"
             >
               {i.label}
             </Link>

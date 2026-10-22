@@ -2,26 +2,31 @@
 
 /* ------------------------------------------------------------------
    Design system — Pelada do Caps
-   Fundo escuro "noite de jogo", verde-limão como cor de ação,
-   dourado reservado a conquistas. Tipografia condensada nos títulos.
+   Azul e preto da Inter de Milão (o torneio é na Inter Academy):
+   fundo azul-noite, azul Inter nas ações, dourado só para conquistas.
+   Tipografia condensada nos títulos.
    ------------------------------------------------------------------ */
 @theme {
   --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-display: "Barlow Condensed", "Arial Narrow", ui-sans-serif, sans-serif;
 
-  --color-bg: #070b09;
-  --color-surface: #0e1411;
-  --color-surface-2: #141c18;
-  --color-surface-3: #1b2520;
-  --color-line: #233029;
-  --color-line-strong: #31443a;
-  --color-ink: #eef4f0;
-  --color-muted: #9aaba1;
-  --color-subtle: #6f8177;
+  --color-bg: #050913;
+  --color-surface: #0a1324;
+  --color-surface-2: #0f1b31;
+  --color-surface-3: #16243f;
+  --color-line: #1b2a45;
+  --color-line-strong: #2a3e62;
+  --color-ink: #eef3fb;
+  --color-muted: #96a5c0;
+  --color-subtle: #687895;
 
-  --color-accent: #b9f53d;
-  --color-accent-strong: #a3e01f;
-  --color-accent-ink: #0b1405;
+  /* Azul Inter: "brand" para preenchimentos (texto branco),
+     "accent" (mais claro) para textos, ícones e destaques sobre o fundo. */
+  --color-brand: #0a68bd;
+  --color-brand-strong: #0858a3;
+  --color-accent: #4aa6ef;
+  --color-accent-strong: #2d8fe0;
+  --color-accent-ink: #ffffff;
   --color-gold: #f5c84b;
   --color-live: #ff4d4d;
   --color-danger: #f05252;
@@ -68,11 +73,17 @@
     border-radius: 0.375rem;
   }
   ::selection {
-    background: var(--color-accent);
-    color: var(--color-accent-ink);
+    background: var(--color-brand);
+    color: #fff;
   }
   input, select, textarea {
     font-size: 16px; /* evita zoom automático no iOS */
+  }
+  /* O selo do Netlify fica acima da barra de navegação inferior do celular. */
+  @media (max-width: 1023px) {
+    iframe#nl-badge-frame {
+      bottom: calc(4.75rem + env(safe-area-inset-bottom)) !important;
+    }
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -87,13 +98,23 @@
     @apply rounded-[var(--radius-card)] border border-line bg-surface shadow-[var(--shadow-card)];
   }
   .card-hover {
-    @apply transition-colors hover:border-line-strong hover:bg-surface-2;
+    @apply transition-[background-color,border-color,transform] duration-150 hover:border-line-strong hover:bg-surface-2 active:scale-[0.985] active:bg-surface-2;
+  }
+  /* Carrossel horizontal no celular (rola com o dedo, encaixa em cada card);
+     vira grade a partir de telas médias. */
+  .rail {
+    @apply -mx-4 flex min-w-0 snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:overflow-visible sm:px-0 sm:pb-0;
+    scrollbar-width: none;
+  }
+  .rail::-webkit-scrollbar { display: none; }
+  .rail > * {
+    @apply w-[84%] shrink-0 snap-start sm:w-auto;
   }
   .btn, .btn-primary, .btn-secondary, .btn-ghost, .btn-danger {
     @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50;
   }
   .btn-primary {
-    @apply bg-accent text-accent-ink hover:bg-accent-strong;
+    @apply bg-brand text-white shadow-[0_6px_20px_-8px_rgb(10_104_189/0.8)] hover:bg-brand-strong;
   }
   .btn-secondary {
     @apply border border-line-strong bg-surface-2 text-ink hover:bg-surface-3;
@@ -113,10 +134,14 @@
   .container-page {
     @apply mx-auto w-full max-w-6xl px-4 sm:px-6;
   }
+  /* Listras verticais azul e preto da camisa da Inter. */
+  .nerazzurri {
+    background-image: repeating-linear-gradient(90deg, rgb(10 104 189 / 0.22) 0 44px, rgb(0 0 0 / 0) 44px 88px);
+  }
   .pitch-lines {
     background-image:
-      radial-gradient(circle at 50% 50%, transparent 0 22%, rgb(185 245 61 / 0.07) 22.2% 22.6%, transparent 22.8%),
-      linear-gradient(90deg, transparent calc(50% - 1px), rgb(185 245 61 / 0.07) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px));
+      radial-gradient(circle at 50% 50%, transparent 0 22%, rgb(74 166 239 / 0.08) 22.2% 22.6%, transparent 22.8%),
+      linear-gradient(90deg, transparent calc(50% - 1px), rgb(74 166 239 / 0.08) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px));
   }
   .tabular {
     font-variant-numeric: tabular-nums;

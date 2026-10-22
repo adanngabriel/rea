@@ -164,7 +164,7 @@ export async function siteOgCard(s: Snapshot | null, customImageUrl?: string | n
   }
   const logo = await embedImage(s?.edition.logo_url);
   return renderCard(
-    <div style={{ width: 1200, height: 630, display: "flex", alignItems: "center", padding: 72, background: `radial-gradient(circle at 20% 10%, #23461a 0%, ${C.bg} 60%)`, color: C.ink, fontFamily: "Barlow Condensed" }}>
+    <div style={{ width: 1200, height: 630, display: "flex", alignItems: "center", padding: 72, background: `radial-gradient(circle at 20% 10%, #0b3a78 0%, ${C.bg} 60%)`, color: C.ink, fontFamily: "Barlow Condensed" }}>
       <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
         <span style={{ fontSize: 34, color: C.accent, letterSpacing: 6, fontWeight: 600 }}>{(s?.edition.venue ?? "INTER ACADEMY").toUpperCase()} • {s?.edition.season ?? "2026"}</span>
         <span style={{ fontSize: 110, fontWeight: 800, lineHeight: 0.92, textTransform: "uppercase", marginTop: 12 }}>{name}</span>

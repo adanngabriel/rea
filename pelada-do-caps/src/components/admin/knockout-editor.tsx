@@ -62,7 +62,7 @@ export function KnockoutEditor({
           <p className="field-label">Jogos do mata-mata (na ordem em que acontecem)</p>
           <input type="hidden" name="slot_count" value={slots.length} />
           {slots.map((slot, i) => (
-            <div key={i} className="grid gap-3 rounded-2xl border border-line p-3 sm:grid-cols-2 lg:grid-cols-[1fr_6rem_1fr_1fr_1fr_auto]">
+            <div key={i} className="grid grid-cols-1 gap-3 rounded-2xl border border-line p-3 sm:grid-cols-2 lg:grid-cols-[1fr_6rem_1fr_1fr_1fr_auto]">
               <label>
                 <span className="field-label text-xs">Nome</span>
                 <input className="input" name={`slot_${i}_label`} value={slot.label} onChange={(e) => update(i, { label: e.target.value })} maxLength={60} />
