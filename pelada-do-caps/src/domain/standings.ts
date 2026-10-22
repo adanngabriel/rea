@@ -201,12 +201,11 @@ export function computeStandings(
   const matches = standingsMatches(allMatches);
   const totals = tally(teams, matches, events, rules);
   const ranked = rank([...totals.values()], rules.tiebreakers, matches, events, rules);
-  const anyPlayed = ranked.some((r) => r.totals.played > 0);
   return ranked.map(({ totals: t, unresolved }, index) => ({
     ...t,
     form: t.form.slice(-5),
     position: index + 1,
-    // Antes do primeiro jogo, todos estão naturalmente empatados.
-    unresolvedTie: anyPlayed && unresolved,
+    // Times que ainda não jogaram estão naturalmente empatados.
+    unresolvedTie: unresolved && t.played > 0,
   }));
 }

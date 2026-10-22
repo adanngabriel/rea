@@ -2,14 +2,14 @@
 
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { createContext, useActionState, useContext, useEffect, useId, useRef, useTransition } from "react";
-import { useFormStatus } from "react-dom";
+import { createContext, startTransition, useActionState, useContext, useEffect, useId, useRef, useTransition } from "react";
 import type { ActionResult } from "@/actions/_lib";
 import { toast } from "./toast";
 
 type ServerAction = (form: FormData) => Promise<ActionResult>;
 
 const ErrorsContext = createContext<Record<string, string>>({});
+const PendingContext = createContext(false);
 
 /**
  * Formulário ligado a uma Server Action: mostra carregamento, mensagens de
@@ -32,7 +32,7 @@ export function ActionForm({
 }) {
   const router = useRouter();
   const ref = useRef<HTMLFormElement>(null);
-  const [state, formAction] = useActionState<ActionResult | null, FormData>(async (_prev, form) => action(form), null);
+  const [state, formAction, pending] = useActionState<ActionResult | null, FormData>(async (_prev, form) => action(form), null);
   useEffect(() => {
     if (!state) return;
     if (state.ok) {
@@ -47,20 +47,35 @@ export function ActionForm({
   }, [state]);
   return (
     <ErrorsContext.Provider value={state && !state.ok ? (state.fieldErrors ?? {}) : {}}>
-      <form ref={ref} action={formAction} className={className} noValidate>
-        {state && !state.ok ? (
-          <p role="alert" className="rounded-xl border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger">
-            {state.error}
-          </p>
-        ) : null}
-        {children}
-      </form>
+      <PendingContext.Provider value={pending}>
+        {/* onSubmit em vez de action={...}: o React limparia os campos após
+            cada envio, apagando o que foi digitado quando há erro. */}
+        <form
+          ref={ref}
+          className={className}
+          noValidate
+          aria-busy={pending}
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (pending) return;
+            const data = new FormData(e.currentTarget);
+            startTransition(() => formAction(data));
+          }}
+        >
+          {state && !state.ok ? (
+            <p role="alert" className="rounded-xl border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger">
+              {state.error}
+            </p>
+          ) : null}
+          {children}
+        </form>
+      </PendingContext.Provider>
     </ErrorsContext.Provider>
   );
 }
 
 export function SubmitButton({ children = "Salvar", className = "btn-primary" }: { children?: React.ReactNode; className?: string }) {
-  const { pending } = useFormStatus();
+  const pending = useContext(PendingContext);
   return (
     <button type="submit" className={className} disabled={pending}>
       {pending ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}

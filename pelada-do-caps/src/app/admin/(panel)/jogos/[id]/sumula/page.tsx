@@ -18,11 +18,21 @@ import { formatDateTime } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Súmula" };
 
-const FLOW: { status: Match["status"]; label: string; tone: string }[] = [
-  { status: "live", label: "▶ Iniciar / 2º tempo", tone: "btn-primary" },
-  { status: "halftime", label: "⏸ Intervalo", tone: "btn-secondary" },
-  { status: "finished", label: "🏁 Encerrar partida", tone: "btn-primary" },
-];
+type Step = { status: Match["status"]; label: string; tone: string };
+const START: Step = { status: "live", label: "▶ Iniciar partida", tone: "btn-primary" };
+const SECOND_HALF: Step = { status: "live", label: "▶ 2º tempo", tone: "btn-primary" };
+const HALFTIME: Step = { status: "halftime", label: "⏸ Intervalo", tone: "btn-secondary" };
+const FINISH: Step = { status: "finished", label: "🏁 Encerrar partida", tone: "btn-primary" };
+
+/** Próximos passos possíveis a partir do status atual. */
+const FLOW: Record<Match["status"], Step[]> = {
+  scheduled: [START],
+  postponed: [START],
+  cancelled: [],
+  live: [HALFTIME, FINISH],
+  halftime: [SECOND_HALF, FINISH],
+  finished: [],
+};
 
 export default async function SumulaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -77,7 +87,7 @@ export default async function SumulaPage({ params }: { params: Promise<{ id: str
           </div>
           <p className="mt-3 text-center text-xs text-muted">O placar é calculado pelos gols lançados abaixo — para corrigir, remova ou adicione gols.</p>
           <div className="mt-5 flex flex-wrap justify-center gap-2">
-            {FLOW.map((f) => (
+            {FLOW[match.status].map((f) => (
               <ConfirmAction
                 key={f.status}
                 action={setMatchStatus.bind(null, match.id, f.status)}
