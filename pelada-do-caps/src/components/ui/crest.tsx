@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { CrestImage } from "./crest-image";
 import type { Team } from "@/domain/types";
 
 function initials(team: Pick<Team, "name" | "short_name">): string {
@@ -20,19 +20,32 @@ export function Crest({
   priority?: boolean;
 }) {
   const style = { width: size, height: size };
+  const shield = <CrestShield team={team} size={size} className={className} />;
   if (team?.crest_url) {
     return (
-      <Image
+      <CrestImage
         src={team.crest_url}
         alt={`Escudo do ${team.name}`}
-        width={size}
-        height={size}
+        size={size}
         priority={priority}
         className={`shrink-0 object-contain ${className}`}
-        style={style}
+        fallback={shield}
       />
     );
   }
+  return shield;
+}
+
+function CrestShield({
+  team,
+  size,
+  className,
+}: {
+  team: Pick<Team, "name" | "short_name" | "primary_color" | "secondary_color"> | null;
+  size: number;
+  className: string;
+}) {
+  const style = { width: size, height: size };
   const primary = team?.primary_color ?? "#31443a";
   const secondary = team?.secondary_color ?? "#9aaba1";
   return (
