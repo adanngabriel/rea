@@ -6,6 +6,7 @@ import { slugify } from "@/lib/format";
 import { syncBracket } from "./_bracket";
 import {
   adminAction,
+  checkbox,
   idSchema,
   must,
   optionalDate,
@@ -131,7 +132,7 @@ const disciplineSchema = z.object({
   yellowsForSuspension: optionalInt(1, 20),
   yellowSuspensionMatches: z.coerce.number().int().min(1).max(10),
   redSuspensionMatches: optionalInt(1, 10),
-  redCancelsSameMatchYellows: z.string().optional().transform((v) => v === "on"),
+  redCancelsSameMatchYellows: checkbox,
 });
 
 export async function saveDisciplineRules(form: FormData): Promise<ActionResult> {

@@ -140,9 +140,7 @@ export const optionalInt = (min: number, max: number) =>
     return n;
   });
 
-export const checkbox = z
-  .union([z.literal("on"), z.literal("true"), z.literal(""), z.undefined(), z.null()])
-  .transform((v) => v === "on" || v === "true");
+export { checkbox } from "@/lib/form-fields";
 
 export const optionalUuid = trimmed.transform((v, ctx) => {
   if (v === "") return null;
