@@ -21,8 +21,9 @@ export function AwardCard({ award: a, ix }: { award: Award; ix: ReturnType<typeo
   return (
     <article className="card overflow-hidden">
       {a.image_url ? (
-        <a href={a.image_url} target="_blank" rel="noopener" className="relative block aspect-[4/3] bg-surface-2" aria-label={`Ver foto de ${a.title} em tamanho real`}>
-          <Image src={a.image_url} alt={a.title} fill sizes="(min-width: 1024px) 380px, (min-width: 640px) 50vw, 90vw" className="object-cover" />
+        // A foto aparece inteira, na proporção original (cartazes não são cortados).
+        <a href={a.image_url} target="_blank" rel="noopener" className="block bg-surface-2" aria-label={`Ver foto de ${a.title} em tamanho real`}>
+          <Image src={a.image_url} alt={a.title} width={1200} height={1200} sizes="(min-width: 1024px) 380px, (min-width: 640px) 50vw, 90vw" className="h-auto w-full" />
         </a>
       ) : null}
       <div className="flex items-center gap-3 p-4">
