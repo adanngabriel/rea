@@ -4,6 +4,7 @@ import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createContext, startTransition, useActionState, useContext, useEffect, useId, useRef, useTransition } from "react";
 import type { ActionResult } from "@/actions/_lib";
+import { afterSave } from "./after-save";
 import { toast } from "./toast";
 
 type ServerAction = (form: FormData) => Promise<ActionResult>;
@@ -39,7 +40,7 @@ export function ActionForm({
       toast("success", state.message ?? success);
       if (resetOnSuccess) ref.current?.reset();
       onSuccess?.();
-      if (state.redirectTo) router.push(state.redirectTo);
+      afterSave(router, state.redirectTo);
     } else {
       toast("error", state.error);
     }
@@ -228,7 +229,7 @@ export function ConfirmAction({
           const result = await action();
           if (result.ok) {
             toast("success", result.message ?? success);
-            if (result.redirectTo) router.push(result.redirectTo);
+            afterSave(router, result.redirectTo);
           } else toast("error", result.error);
         });
       }}

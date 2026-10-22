@@ -1,8 +1,10 @@
 "use client";
 
 import { Loader2, UploadCloud } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { addPhotos } from "@/actions/content";
+import { afterSave } from "./after-save";
 import { toast } from "./toast";
 import { uploadToStorage } from "./upload";
 
@@ -10,6 +12,7 @@ import { uploadToStorage } from "./upload";
 export function PhotoUploader({ albumId }: { albumId: string }) {
   const input = useRef<HTMLInputElement>(null);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
+  const router = useRouter();
   const [, start] = useTransition();
   const [dragging, setDragging] = useState(false);
   const upload = async (files: File[]) => {
@@ -29,6 +32,7 @@ export function PhotoUploader({ albumId }: { albumId: string }) {
       if (urls.length) {
         const result = await addPhotos(albumId, urls);
         toast(result.ok ? "success" : "error", result.ok ? (result.message ?? "Fotos adicionadas.") : result.error);
+        if (result.ok) afterSave(router);
       }
       setProgress(null);
     });

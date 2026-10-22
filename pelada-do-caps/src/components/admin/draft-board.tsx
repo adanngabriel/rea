@@ -1,9 +1,11 @@
 "use client";
 
 import { Loader2, Search, Shuffle, Undo2, X } from "lucide-react";
-import { useMemo, useOptimistic, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { assignPlayer, autoDraft, undoLastDraft } from "@/actions/draft";
 import type { ActionResult } from "@/actions/_lib";
+import { afterSave } from "./after-save";
 import { toast } from "./toast";
 
 export interface DraftPlayer {
@@ -45,10 +47,21 @@ function PlayerTag({ p }: { p: DraftPlayer }) {
  * aparece na página pública /sorteio sem recarregar.
  */
 export function DraftBoard({ players: serverPlayers, teams, maxPerTeam }: { players: DraftPlayer[]; teams: DraftTeam[]; maxPerTeam: number | null }) {
+  const router = useRouter();
   const [pending, start] = useTransition();
-  // O jogador muda de time na tela no mesmo instante; o servidor confirma em seguida.
-  const [players, moveOptimistic] = useOptimistic(serverPlayers, (list, move: { id: string; teamId: string | null }) =>
-    list.map((p) => (p.id === move.id ? { ...p, teamId: move.teamId } : p)),
+  // O jogador muda de time na tela no mesmo instante; a jogada fica guardada
+  // até a tela atualizada do servidor chegar com ela (ou ser desfeita se falhar).
+  const [moves, setMoves] = useState<Record<string, { teamId: string | null; saved: boolean }>>({});
+  useEffect(() => {
+    setMoves((current) => {
+      const team = new Map(serverPlayers.map((p) => [p.id, p.teamId]));
+      const kept = Object.entries(current).filter(([id, m]) => !m.saved && team.get(id) !== m.teamId);
+      return kept.length === Object.keys(current).length ? current : Object.fromEntries(kept);
+    });
+  }, [serverPlayers]);
+  const players = useMemo(
+    () => serverPlayers.map((p) => (moves[p.id] ? { ...p, teamId: moves[p.id].teamId } : p)),
+    [serverPlayers, moves],
   );
   const [busyId, setBusyId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -70,12 +83,21 @@ export function DraftBoard({ players: serverPlayers, teams, maxPerTeam }: { play
 
   const run = (id: string | null, action: () => Promise<ActionResult>, move?: { id: string; teamId: string | null }) => {
     setBusyId(id);
+    if (move) setMoves((m) => ({ ...m, [move.id]: { teamId: move.teamId, saved: false } }));
     start(async () => {
-      if (move) moveOptimistic(move);
       const result = await action();
       setBusyId(null);
+      if (move) {
+        setMoves((m) => {
+          if (m[move.id]?.teamId !== move.teamId) return m;
+          if (result.ok) return { ...m, [move.id]: { ...m[move.id], saved: true } };
+          const { [move.id]: _undone, ...rest } = m;
+          return rest;
+        });
+      }
       if (result.ok) toast("success", result.message ?? "Salvo.");
       else toast("error", result.error);
+      afterSave(router);
     });
   };
 

@@ -1,11 +1,9 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { revalidatePath, updateTag } from "next/cache";
 import { after } from "next/server";
 import { z } from "zod";
 import type { Edition } from "@/domain/types";
 import { getAdmin, type AdminSession } from "@/lib/auth";
-import { PUBLIC_DATA_TAG } from "@/lib/supabase/public";
 import { serverClient } from "@/lib/supabase/server";
 
 export type ActionResult =
@@ -96,10 +94,8 @@ export async function adminAction(run: (ctx: ActionContext) => Promise<ActionRes
   };
   try {
     const result = (await run(ctx)) ?? { ok: true as const };
-    if (result.ok) {
-      updateTag(PUBLIC_DATA_TAG);
-      revalidatePath("/admin", "layout");
-    }
+    // A atualização das telas e do site público fica com quem chamou
+    // (afterSave), para a resposta voltar assim que a escrita termina.
     return result;
   } catch (error) {
     if (error instanceof UserError) return { ok: false, error: error.message, fieldErrors: error.fieldErrors };
