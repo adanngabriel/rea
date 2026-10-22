@@ -25,17 +25,18 @@ export default async function AdminAwardEditPage({ params }: { params: Promise<{
             <TextField label="Título exibido" name="title" defaultValue={award?.title ?? ""} placeholder="Ex.: Craque do torneio" maxLength={80} />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <SelectField label="Time" name="team_id" defaultValue={award?.team_id ?? ""} placeholder="—" options={s.teams.map((t) => ({ value: t.id, label: t.name }))} />
+            <SelectField label="Time vencedor" name="team_id" hint="Deixe em branco até saber quem ganhou." defaultValue={award?.team_id ?? ""} placeholder="—" options={s.teams.map((t) => ({ value: t.id, label: t.name }))} />
             <SelectField
-              label="Jogador"
+              label="Jogador vencedor"
               name="player_id"
+              hint="Deixe em branco até saber quem ganhou."
               defaultValue={award?.player_id ?? ""}
               placeholder="—"
               options={rosterEntries(s).map((e) => ({ value: e.player.id, label: `${displayName(e.player)}${e.team ? ` (${e.team.name})` : ""}` }))}
             />
           </div>
           <SelectField label="Rodada (para destaques da rodada)" name="round_id" defaultValue={award?.round_id ?? ""} placeholder="Geral" options={s.rounds.map((r) => ({ value: r.id, label: r.name }))} />
-          <TextArea label="Descrição" name="description" defaultValue={award?.description ?? ""} rows={2} />
+          <TextArea label="Descrição (o que o vencedor recebe)" name="description" defaultValue={award?.description ?? ""} rows={2} />
           <ImageUpload name="image_url" label="Foto da premiação" folder="premiacoes" defaultValue={award?.image_url} aspect="wide" />
           <TextField label="Ordem" name="sort_order" type="number" min={0} defaultValue={award?.sort_order ?? 0} />
         </FormSection>

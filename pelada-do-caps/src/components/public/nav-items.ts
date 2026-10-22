@@ -41,7 +41,7 @@ export const MORE_NAV: NavItem[] = [
   { href: "/documentos", label: "Regulamento e documentos", icon: BookOpen },
   { href: "/galeria", label: "Galeria", icon: Images },
   { href: "/na-midia", label: "Na mídia", icon: Radio },
-  { href: "/campeao", label: "Campeão", icon: Flag },
+  { href: "/campeao", label: "Campeão e premiações", icon: Flag },
   { href: "/campeoes", label: "Hall dos campeões", icon: Medal },
   { href: "/sobre", label: "Sobre o torneio", icon: Info },
 ];

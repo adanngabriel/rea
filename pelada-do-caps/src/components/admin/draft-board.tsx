@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { assignPlayer, autoDraft, undoLastDraft } from "@/actions/draft";
 import type { ActionResult } from "@/actions/_lib";
-import { afterSave } from "./after-save";
+import { afterSave, runAction } from "./after-save";
 import { toast } from "./toast";
 
 export interface DraftPlayer {
@@ -85,7 +85,7 @@ export function DraftBoard({ players: serverPlayers, teams, maxPerTeam }: { play
     setBusyId(id);
     if (move) setMoves((m) => ({ ...m, [move.id]: { teamId: move.teamId, saved: false } }));
     start(async () => {
-      const result = await action();
+      const result = await runAction(action);
       setBusyId(null);
       if (move) {
         setMoves((m) => {

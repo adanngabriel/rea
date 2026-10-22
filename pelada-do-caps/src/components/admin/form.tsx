@@ -4,7 +4,7 @@ import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createContext, startTransition, useActionState, useContext, useEffect, useId, useRef, useTransition } from "react";
 import type { ActionResult } from "@/actions/_lib";
-import { afterSave } from "./after-save";
+import { afterSave, runAction } from "./after-save";
 import { toast } from "./toast";
 
 type ServerAction = (form: FormData) => Promise<ActionResult>;
@@ -33,7 +33,7 @@ export function ActionForm({
 }) {
   const router = useRouter();
   const ref = useRef<HTMLFormElement>(null);
-  const [state, formAction, pending] = useActionState<ActionResult | null, FormData>(async (_prev, form) => action(form), null);
+  const [state, formAction, pending] = useActionState<ActionResult | null, FormData>(async (_prev, form) => runAction(() => action(form)), null);
   useEffect(() => {
     if (!state) return;
     if (state.ok) {
@@ -226,7 +226,7 @@ export function ConfirmAction({
       onClick={() => {
         if (confirm && !window.confirm(confirm)) return;
         start(async () => {
-          const result = await action();
+          const result = await runAction(action);
           if (result.ok) {
             toast("success", result.message ?? success);
             afterSave(router, result.redirectTo);

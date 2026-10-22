@@ -4,7 +4,7 @@ import { Loader2, UploadCloud } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { addPhotos } from "@/actions/content";
-import { afterSave } from "./after-save";
+import { afterSave, runAction } from "./after-save";
 import { toast } from "./toast";
 import { uploadToStorage } from "./upload";
 
@@ -30,7 +30,7 @@ export function PhotoUploader({ albumId }: { albumId: string }) {
     }
     start(async () => {
       if (urls.length) {
-        const result = await addPhotos(albumId, urls);
+        const result = await runAction(() => addPhotos(albumId, urls));
         toast(result.ok ? "success" : "error", result.ok ? (result.message ?? "Fotos adicionadas.") : result.error);
         if (result.ok) afterSave(router);
       }

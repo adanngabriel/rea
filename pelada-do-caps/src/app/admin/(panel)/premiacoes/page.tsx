@@ -29,8 +29,8 @@ export default async function AdminAwardsPage() {
       <div className="max-w-4xl space-y-4">
         <Notice>
           O campeão e o vice são definidos automaticamente pelo resultado da final
-          {auto ? ` (atualmente: ${ix.team(auto.championId)?.name})` : ""}. Cadastre aqui para registrar foto da premiação, prêmios individuais ou
-          para corrigir manualmente.
+          {auto ? ` (atualmente: ${ix.team(auto.championId)?.name})` : ""}. Cadastre aqui os prêmios (o que o vencedor recebe, com foto) já antes do
+          torneio: eles aparecem na página pública de premiações. Escolha o vencedor depois, ao fim do campeonato.
         </Notice>
         <AdminList
           empty="Nenhuma premiação registrada."
@@ -40,7 +40,7 @@ export default async function AdminAwardsPage() {
               id: a.id,
               href: `/admin/premiacoes/${a.id}`,
               title: a.title,
-              meta: `${AWARD_LABELS[a.category]} • ${who ? displayName(who) : (ix.team(a.team_id)?.name ?? "")}${a.round_id ? ` • ${ix.round(a.round_id)?.name}` : ""}`,
+              meta: `${AWARD_LABELS[a.category]} • ${who ? displayName(who) : (ix.team(a.team_id)?.name ?? "Vencedor a definir")}${a.round_id ? ` • ${ix.round(a.round_id)?.name}` : ""}`,
             };
           })}
         />

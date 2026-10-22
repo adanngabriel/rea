@@ -231,19 +231,18 @@ export async function setAlbumCover(albumId: string, url: string): Promise<Actio
 
 // ---------------- Premiações ----------------
 
-const awardSchema = z
-  .object({
-    category: z.enum(["champion", "runner_up", "third_place", "top_scorer", "best_player", "best_goalkeeper", "round_highlight", "other"]),
-    title: requiredText(80, "Informe o título do prêmio"),
-    round_id: optionalUuid,
-    team_id: optionalUuid,
-    player_id: optionalUuid,
-    description: optionalText(300),
-    image_url: storageUrl,
-    sort_order: z.coerce.number().int().min(0).max(999).default(0),
-  })
-  .refine((a) => a.team_id || a.player_id, { message: "Escolha um time ou um jogador", path: ["player_id"] })
-  .refine((a) => !["champion", "runner_up", "third_place"].includes(a.category) || a.team_id, { message: "Escolha o time", path: ["team_id"] });
+// Time e jogador ficam em branco enquanto o prêmio só foi anunciado; o
+// vencedor é escolhido depois, editando a premiação.
+const awardSchema = z.object({
+  category: z.enum(["champion", "runner_up", "third_place", "top_scorer", "best_player", "best_goalkeeper", "round_highlight", "other"]),
+  title: requiredText(80, "Informe o título do prêmio"),
+  round_id: optionalUuid,
+  team_id: optionalUuid,
+  player_id: optionalUuid,
+  description: optionalText(300),
+  image_url: storageUrl,
+  sort_order: z.coerce.number().int().min(0).max(999).default(0),
+});
 
 export async function saveAward(id: string | null, form: FormData): Promise<ActionResult> {
   return adminAction(async (ctx) => {
