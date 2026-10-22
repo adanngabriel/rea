@@ -1,7 +1,8 @@
-import { Medal, Trophy } from "lucide-react";
+import { Trophy } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { AwardCard, tournamentPrizes } from "@/components/public/award-card";
 import { PlayerAvatar } from "@/components/ui/avatar";
 import { Crest } from "@/components/ui/crest";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -10,46 +11,17 @@ import { outcomeOf } from "@/domain/score";
 import { displayName, indexSnapshot, rosterEntries, teamRoster } from "@/domain/snapshot";
 import { orderedMatches } from "@/domain/schedule";
 import { computePlayerStats, leaderboard, teamTotals } from "@/domain/stats";
-import type { Award, AwardCategory } from "@/domain/types";
 import { currentSnapshot } from "@/lib/data/require";
 
 export const revalidate = 60;
 export const metadata: Metadata = { title: "Campeão e premiações", description: "As premiações do torneio e o grande campeão." };
-
-const AWARD_ORDER: AwardCategory[] = ["runner_up", "third_place", "top_scorer", "best_player", "best_goalkeeper", "other"];
-const PRIZE_ORDER: AwardCategory[] = ["champion", ...AWARD_ORDER];
-
-/** Um prêmio: o que se ganha e, quando já se sabe, quem ganhou. */
-function AwardCard({ award: a, ix }: { award: Award; ix: ReturnType<typeof indexSnapshot> }) {
-  const p = ix.player(a.player_id);
-  const t = ix.team(a.team_id);
-  return (
-    <li className="card overflow-hidden">
-      {a.image_url ? (
-        <div className="relative aspect-[16/9] bg-surface-2">
-          <Image src={a.image_url} alt={a.title} fill sizes="(min-width: 1024px) 380px, (min-width: 640px) 50vw, 100vw" className="object-cover" />
-        </div>
-      ) : null}
-      <div className="flex items-center gap-3 p-4">
-        {p ? <PlayerAvatar player={p} size={52} /> : t ? <Crest team={t} size={52} /> : <Medal className="size-10 shrink-0 text-gold" aria-hidden />}
-        <div className="min-w-0">
-          <p className="eyebrow text-gold">{a.title}</p>
-          <p className="truncate font-semibold">{p ? displayName(p) : (t?.name ?? <span className="text-muted">Vencedor a definir</span>)}</p>
-          {a.description ? <p className="text-xs text-muted">{a.description}</p> : null}
-        </div>
-      </div>
-    </li>
-  );
-}
 
 export default async function ChampionPage() {
   const s = await currentSnapshot();
   const result = championOf(s);
   const ix = indexSnapshot(s);
   if (!result) {
-    const prizes = s.awards
-      .filter((a) => PRIZE_ORDER.includes(a.category))
-      .sort((a, b) => PRIZE_ORDER.indexOf(a.category) - PRIZE_ORDER.indexOf(b.category) || a.sort_order - b.sort_order);
+    const prizes = tournamentPrizes(s.awards);
     return (
       <div className="container-page space-y-8 py-10">
         <EmptyState icon={Trophy} title="A taça ainda está em jogo">
@@ -60,7 +32,9 @@ export default async function ChampionPage() {
             <h2 className="mb-4 font-display text-2xl font-extrabold uppercase">Premiações em disputa</h2>
             <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {prizes.map((a) => (
-                <AwardCard key={a.id} award={a} ix={ix} />
+                <li key={a.id}>
+                  <AwardCard award={a} ix={ix} />
+                </li>
               ))}
             </ul>
           </section>
@@ -79,9 +53,7 @@ export default async function ChampionPage() {
   const stats = computePlayerStats(s);
   const teamScorer = [...roster].sort((a, b) => (stats.get(b.player.id)?.goals ?? 0) - (stats.get(a.player.id)?.goals ?? 0))[0];
   const championAward = s.awards.find((a) => a.category === "champion");
-  const awards = s.awards
-    .filter((a) => AWARD_ORDER.includes(a.category))
-    .sort((a, b) => AWARD_ORDER.indexOf(a.category) - AWARD_ORDER.indexOf(b.category) || a.sort_order - b.sort_order);
+  const awards = tournamentPrizes(s.awards, ["champion"]);
   const topScorer = leaderboard(s, "goals", stats)[0];
 
   return (
@@ -124,7 +96,9 @@ export default async function ChampionPage() {
           <h2 className="mb-4 font-display text-2xl font-extrabold uppercase">Premiações</h2>
           <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {awards.map((a) => (
-              <AwardCard key={a.id} award={a} ix={ix} />
+              <li key={a.id}>
+                <AwardCard award={a} ix={ix} />
+              </li>
             ))}
             {!awards.some((a) => a.category === "top_scorer") && topScorer ? (
               <li className="card flex items-center gap-3 p-4">

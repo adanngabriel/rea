@@ -5,6 +5,7 @@ import {
   Flag,
   GitBranch,
   Images,
+  Medal,
   Newspaper,
   Shield,
   Shirt,
@@ -16,9 +17,11 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { qualificationMarks } from "@/domain/bracket";
+import { indexSnapshot } from "@/domain/snapshot";
 import { countdownTarget, featuredMatch, finishedMatches, upcomingMatches } from "@/domain/schedule";
 import { computeStandings } from "@/domain/standings";
 import { computePlayerStats, leaderboard } from "@/domain/stats";
+import { AwardCard, tournamentPrizes } from "@/components/public/award-card";
 import { Countdown } from "@/components/public/countdown";
 import { FeaturedMatch } from "@/components/public/featured-match";
 import { HighlightCard } from "@/components/public/highlight-card";
@@ -39,6 +42,7 @@ const SHORTCUTS = [
   { href: "/classificacao", label: "Classificação", icon: Table2 },
   { href: "/times", label: "Times", icon: Shield },
   { href: "/jogadores", label: "Jogadores", icon: Users },
+  { href: "/premiacoes", label: "Premiações", icon: Medal },
   { href: "/estatisticas", label: "Estatísticas", icon: Trophy },
   { href: "/mata-mata", label: "Mata-mata", icon: GitBranch },
   { href: "/cartoes", label: "Cartões", icon: Square },
@@ -62,6 +66,8 @@ export default async function HomePage() {
   const leaderRow = standings.find((r) => r.played > 0) ? standings[0] : null;
   const results = finishedMatches(s).slice(0, 4);
   const upcoming = upcomingMatches(s).filter((m) => m.id !== featured?.id).slice(0, 4);
+  const prizes = tournamentPrizes(s.awards);
+  const ix = indexSnapshot(s);
   const { edition } = s;
   const dates =
     edition.starts_on && edition.ends_on
@@ -151,6 +157,19 @@ export default async function HomePage() {
             </div>
           </section>
         </div>
+
+        {prizes.length ? (
+          <section>
+            <SectionHeader title="Premiações" href="/premiacoes" />
+            <ul className="rail sm:grid-cols-2 lg:grid-cols-3">
+              {prizes.slice(0, 3).map((a) => (
+                <li key={a.id}>
+                  <AwardCard award={a} ix={ix} />
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
 
         <section>
           <SectionHeader title="Últimos resultados" href="/jogos?status=encerrados" />

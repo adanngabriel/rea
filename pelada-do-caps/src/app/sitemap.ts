@@ -6,7 +6,7 @@ import { supabaseEnv } from "@/lib/supabase/env";
 
 export const revalidate = 3600;
 
-const STATIC = ["", "/jogos", "/classificacao", "/times", "/jogadores", "/estatisticas", "/mata-mata", "/cartoes", "/sorteio", "/noticias", "/documentos", "/galeria", "/na-midia", "/campeao", "/campeoes", "/sobre"];
+const STATIC = ["", "/jogos", "/classificacao", "/times", "/jogadores", "/estatisticas", "/mata-mata", "/cartoes", "/sorteio", "/noticias", "/documentos", "/galeria", "/na-midia", "/premiacoes", "/campeao", "/campeoes", "/sobre"];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteUrl();
