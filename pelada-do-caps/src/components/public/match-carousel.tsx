@@ -46,7 +46,7 @@ export function MatchCarousel({ children, start = 0, label }: { children: React.
           </div>
         ))}
       </div>
-      <div className="flex items-center justify-center gap-3">
+      <div className="flex items-center justify-start gap-3 sm:justify-center">
         <button type="button" onClick={() => go(Math.max(0, current - 1))} disabled={current === 0} className="btn-ghost btn-sm hidden px-2 sm:inline-flex" aria-label="Jogo anterior">
           <ChevronLeft className="size-5" aria-hidden />
         </button>
