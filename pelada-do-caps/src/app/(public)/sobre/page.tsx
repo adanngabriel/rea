@@ -22,7 +22,7 @@ export default async function AboutPage() {
     : null;
   return (
     <>
-      <PageHeader title="Sobre o torneio" eyebrow={edition.name}>
+      <PageHeader title="Sobre o torneio">
         {edition.description}
       </PageHeader>
       <div className="container-page grid grid-cols-1 gap-8 py-8 lg:grid-cols-[1.5fr_1fr]">

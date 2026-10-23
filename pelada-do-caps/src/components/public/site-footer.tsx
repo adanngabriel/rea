@@ -2,11 +2,11 @@ import { Camera, Lock, MessageCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { SPONSOR_TIERS, type SiteSettings, type Sponsor } from "@/lib/data/content";
-import { MORE_NAV, PRIMARY_NAV } from "./nav-items";
+import { NAV_GROUPS } from "./nav-items";
 
 export function SiteFooter({ site, sponsors, editionName }: { site: SiteSettings; sponsors: Sponsor[]; editionName: string }) {
   return (
-    <footer className="mt-16 border-t border-line bg-surface pb-24 lg:pb-0">
+    <footer className="mt-12 border-t border-line bg-surface pb-24 lg:pb-0">
       {sponsors.length > 0 ? (
         <section aria-labelledby="apoio" className="border-b border-line">
           <div className="container-page py-8">
@@ -36,45 +36,39 @@ export function SiteFooter({ site, sponsors, editionName }: { site: SiteSettings
           </div>
         </section>
       ) : null}
-      <div className="container-page grid gap-8 py-8 sm:grid-cols-[1.4fr_1fr_1fr] sm:py-10">
+      <div className="container-page grid gap-8 py-6 sm:grid-cols-[1.2fr_repeat(3,1fr)] sm:py-10">
         <div>
-          <p className="font-display text-2xl font-extrabold uppercase">{editionName}</p>
+          <p className="font-display text-lg font-bold uppercase">{editionName}</p>
           {site.tagline ? <p className="mt-1 text-sm text-muted">{site.tagline}</p> : null}
-          <div className="mt-4 flex gap-2">
-            {site.instagram_url ? (
-              <a href={site.instagram_url} className="btn-secondary btn-sm" target="_blank" rel="noopener noreferrer">
-                <Camera className="size-4" aria-hidden /> Instagram
-              </a>
-            ) : null}
-            {site.whatsapp_url ? (
-              <a href={site.whatsapp_url} className="btn-secondary btn-sm" target="_blank" rel="noopener noreferrer">
-                <MessageCircle className="size-4" aria-hidden /> WhatsApp
-              </a>
-            ) : null}
-          </div>
+          {site.instagram_url || site.whatsapp_url ? (
+            <div className="mt-4 flex gap-2">
+              {site.instagram_url ? (
+                <a href={site.instagram_url} className="btn-secondary btn-sm" target="_blank" rel="noopener noreferrer">
+                  <Camera className="size-4" aria-hidden /> Instagram
+                </a>
+              ) : null}
+              {site.whatsapp_url ? (
+                <a href={site.whatsapp_url} className="btn-secondary btn-sm" target="_blank" rel="noopener noreferrer">
+                  <MessageCircle className="size-4" aria-hidden /> WhatsApp
+                </a>
+              ) : null}
+            </div>
+          ) : null}
         </div>
-        <nav aria-label="Rodapé — competição" className="hidden sm:block">
-          <ul className="space-y-2 text-sm text-muted">
-            {PRIMARY_NAV.slice(1).map((i) => (
-              <li key={i.href}>
-                <Link href={i.href} className="hover:text-ink">
-                  {i.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        <nav aria-label="Rodapé — mais" className="hidden sm:block">
-          <ul className="space-y-2 text-sm text-muted">
-            {MORE_NAV.map((i) => (
-              <li key={i.href}>
-                <Link href={i.href} className="hover:text-ink">
-                  {i.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        {NAV_GROUPS.map((group) => (
+          <nav key={group.title} aria-label={`Rodapé — ${group.title}`} className="hidden sm:block">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-subtle">{group.title}</p>
+            <ul className="space-y-2 text-sm text-muted">
+              {group.items.map((i) => (
+                <li key={i.href}>
+                  <Link href={i.href} className="hover:text-ink">
+                    {i.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ))}
       </div>
       <div className="border-t border-line">
         <div className="container-page flex flex-wrap items-center justify-between gap-3 py-5 text-xs text-subtle">

@@ -74,7 +74,7 @@ export default async function BracketPage() {
   return (
     <>
       <LiveRefresher tables={["matches", "match_events"]} />
-      <PageHeader title="Mata-mata" eyebrow={s.edition.name}>
+      <PageHeader title="Mata-mata">
         {complete ? "Classificados definidos pela fase classificatória." : "Os confrontos são preenchidos automaticamente quando a fase classificatória terminar."}
       </PageHeader>
       <div className="container-page space-y-10 py-8">

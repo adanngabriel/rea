@@ -13,7 +13,7 @@ export default async function PressPage() {
   const links = await getPressLinks();
   return (
     <>
-      <PageHeader title="Na mídia" eyebrow="Imprensa" />
+      <PageHeader title="Na mídia" />
       <div className="container-page py-8">
         {links.length === 0 ? (
           <EmptyState icon={Newspaper} title="Nenhuma matéria ainda">

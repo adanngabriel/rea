@@ -35,7 +35,7 @@ export default async function StatsPage({ searchParams }: { searchParams: Promis
   return (
     <>
       <LiveRefresher tables={["match_events"]} />
-      <PageHeader title="Destaques" eyebrow={`${totalGoals(s)} gols na competição`}>
+      <PageHeader title="Destaques" eyebrow={totalGoals(s) ? `${totalGoals(s)} gols na competição` : undefined}>
         Rankings calculados automaticamente a partir das súmulas.
       </PageHeader>
       <div className="container-page space-y-6 py-8">

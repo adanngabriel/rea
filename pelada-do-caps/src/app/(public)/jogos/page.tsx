@@ -42,7 +42,7 @@ export default async function MatchesPage({ searchParams }: { searchParams: Prom
   return (
     <>
       <LiveRefresher tables={["matches", "match_events"]} />
-      <PageHeader title="Jogos" eyebrow={s.edition.name}>
+      <PageHeader title="Jogos">
         Calendário completo, resultados e confrontos. Toque em uma partida para ver a súmula.
       </PageHeader>
       <div className="container-page space-y-6 py-8">
@@ -80,7 +80,7 @@ export default async function MatchesPage({ searchParams }: { searchParams: Prom
               </div>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {g.matches.map((m) => (
-                  <MatchCard key={m.id} s={s} match={m} />
+                  <MatchCard key={m.id} s={s} match={m} showStage={false} />
                 ))}
               </div>
             </section>

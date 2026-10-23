@@ -14,7 +14,7 @@ export default async function GalleryPage() {
   const albums = await getAlbums();
   return (
     <>
-      <PageHeader title="Galeria" eyebrow="Fotos e vídeos" />
+      <PageHeader title="Galeria" />
       <div className="container-page py-8">
         {albums.length === 0 ? (
           <EmptyState icon={Images} title="Em breve">

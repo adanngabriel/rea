@@ -16,7 +16,7 @@ export default async function PrizesPage() {
   const prizes = tournamentPrizes(s.awards);
   return (
     <>
-      <PageHeader title="Premiações" eyebrow={s.edition.name}>
+      <PageHeader title="Premiações">
         O que está em jogo no torneio. Os vencedores aparecem aqui ao fim do campeonato.
       </PageHeader>
       <div className="container-page space-y-6 py-6 sm:py-10">

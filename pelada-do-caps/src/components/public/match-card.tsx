@@ -21,8 +21,11 @@ function TeamLine({ team, score, winner, showScore }: { team: Team | null; score
   );
 }
 
-/** Card compacto de partida (listas de jogos, resultados, agenda). */
-export function MatchCard({ s, match }: { s: Snapshot; match: Match }) {
+/**
+ * Card compacto de partida (listas de jogos, resultados, agenda). Dentro de
+ * uma lista já agrupada por rodada, `showStage={false}` evita repetir o nome.
+ */
+export function MatchCard({ s, match, showStage = true }: { s: Snapshot; match: Match; showStage?: boolean }) {
   const ix = indexSnapshot(s);
   const home = ix.team(match.home_team_id);
   const away = ix.team(match.away_team_id);
@@ -36,10 +39,13 @@ export function MatchCard({ s, match }: { s: Snapshot; match: Match }) {
       className={`card card-hover block p-4 ${isLive(match) ? "border-live/40" : ""}`}
       aria-label={`${home?.name ?? "A definir"} contra ${away?.name ?? "A definir"}`}
     >
-      <div className="mb-3 flex items-center justify-between gap-2">
-        <span className="eyebrow truncate">{matchStageLabel(s, match)}</span>
-        <StatusBadge status={match.status} />
-      </div>
+      {/* "Agendado" é o normal: o selo só aparece quando diz algo (ao vivo, encerrado, adiado...). */}
+      {showStage || match.status !== "scheduled" ? (
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <span className="eyebrow truncate">{showStage ? matchStageLabel(s, match) : ""}</span>
+          {match.status !== "scheduled" ? <StatusBadge status={match.status} /> : null}
+        </div>
+      ) : null}
       <div className="space-y-2.5">
         <TeamLine team={home} score={score.home} showScore={showScore} winner={!winnerId || winnerId === home?.id} />
         <TeamLine team={away} score={score.away} showScore={showScore} winner={!winnerId || winnerId === away?.id} />

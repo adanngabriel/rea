@@ -14,15 +14,11 @@ export function EmptyState({
   compact?: boolean;
 }) {
   return (
-    <div
-      className={`card pitch-lines flex flex-col items-center text-center ${compact ? "gap-2 px-5 py-8" : "gap-3 px-6 py-14"}`}
-    >
-      <span className="grid size-12 place-items-center rounded-full border border-line-strong bg-surface-2 text-accent">
-        <Icon className="size-5" aria-hidden />
-      </span>
-      <p className="font-display text-xl font-bold uppercase tracking-wide">{title}</p>
-      {children ? <div className="max-w-sm text-sm text-muted">{children}</div> : null}
-      {action ? <div className="mt-2">{action}</div> : null}
+    <div className={`rounded-2xl border border-dashed border-line-strong text-center ${compact ? "px-5 py-6" : "px-6 py-10"}`}>
+      <Icon className="mx-auto mb-2 size-5 text-subtle" aria-hidden />
+      <p className="font-semibold">{title}</p>
+      {children ? <div className="mx-auto mt-1 max-w-sm text-sm text-muted">{children}</div> : null}
+      {action ? <div className="mt-4">{action}</div> : null}
     </div>
   );
 }

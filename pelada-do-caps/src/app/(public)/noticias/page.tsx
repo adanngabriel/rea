@@ -16,7 +16,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
   const news = category ? all.filter((n) => n.category === category) : all;
   return (
     <>
-      <PageHeader title="Notícias" eyebrow="Comunicados oficiais" />
+      <PageHeader title="Notícias" />
       <div className="container-page space-y-6 py-8">
         <Chips
           label="Categorias"

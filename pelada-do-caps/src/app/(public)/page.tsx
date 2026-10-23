@@ -2,17 +2,11 @@ import {
   BookOpen,
   CalendarDays,
   CalendarX2,
-  Flag,
   GitBranch,
-  Images,
   Medal,
-  Newspaper,
   Shield,
   Shirt,
-  Square,
   Table2,
-  Trophy,
-  Users,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -38,20 +32,15 @@ import { formatCalendarDate } from "@/lib/format";
 
 export const revalidate = 60;
 
+// Atalhos do celular: só o que se procura com frequência; o resto está no menu.
 const SHORTCUTS = [
   { href: "/jogos", label: "Jogos", icon: CalendarDays },
   { href: "/classificacao", label: "Classificação", icon: Table2 },
   { href: "/times", label: "Times", icon: Shield },
-  { href: "/jogadores", label: "Jogadores", icon: Users },
   { href: "/premiacoes", label: "Premiações", icon: Medal },
-  { href: "/estatisticas", label: "Estatísticas", icon: Trophy },
   { href: "/mata-mata", label: "Mata-mata", icon: GitBranch },
-  { href: "/cartoes", label: "Cartões", icon: Square },
   { href: "/documentos", label: "Regulamento", icon: BookOpen },
-  { href: "/noticias", label: "Notícias", icon: Newspaper },
   { href: "/sorteio", label: "Sorteio", icon: Shirt },
-  { href: "/galeria", label: "Galeria", icon: Images },
-  { href: "/campeao", label: "Campeão", icon: Flag },
 ];
 
 export default async function HomePage() {
@@ -87,7 +76,6 @@ export default async function HomePage() {
         <div className="nerazzurri absolute inset-0 opacity-70" aria-hidden />
         <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/70 to-transparent" aria-hidden />
         <div className="container-page relative py-7 sm:py-20">
-          <p className="eyebrow mb-2 text-accent sm:mb-3">{edition.season ? `Temporada ${edition.season}` : "Torneio oficial"}</p>
           <h1 className="max-w-3xl font-display text-[2.6rem] font-extrabold uppercase leading-[0.9] sm:text-7xl lg:text-8xl">
             {edition.name}
           </h1>
@@ -154,6 +142,7 @@ export default async function HomePage() {
               </EmptyState>
             )}
           </section>
+          {results.length ? (
           <section>
             <SectionHeader title="Destaques" href="/estatisticas" />
             <div className="rail sm:grid-cols-2 lg:grid-cols-1">
@@ -163,6 +152,7 @@ export default async function HomePage() {
               <HighlightCard label="Líder do torneio" team={leaderRow?.team} value={leaderRow?.points} unit="pontos" empty="A competição ainda não começou." />
             </div>
           </section>
+          ) : null}
         </div>
 
         {prizes.length ? (
@@ -178,20 +168,16 @@ export default async function HomePage() {
           </section>
         ) : null}
 
-        <section>
-          <SectionHeader title="Últimos resultados" href="/jogos?status=encerrados" />
-          {results.length ? (
+        {results.length ? (
+          <section>
+            <SectionHeader title="Últimos resultados" href="/jogos?status=encerrados" />
             <div className="rail sm:grid-cols-2 lg:grid-cols-4">
               {results.map((m) => (
                 <MatchCard key={m.id} s={s} match={m} />
               ))}
             </div>
-          ) : (
-            <EmptyState icon={Trophy} title="Sem resultados" compact>
-              A competição ainda não começou.
-            </EmptyState>
-          )}
-        </section>
+          </section>
+        ) : null}
 
         {upcoming.length ? (
           <section>
@@ -204,36 +190,16 @@ export default async function HomePage() {
           </section>
         ) : null}
 
-        <section>
-          <SectionHeader title="Notícias e comunicados" href="/noticias" />
-          {news.length ? (
+        {news.length ? (
+          <section>
+            <SectionHeader title="Notícias e comunicados" href="/noticias" />
             <div className="rail md:grid-cols-3">
               {news.map((n) => (
                 <NewsCard key={n.id} item={n} />
               ))}
             </div>
-          ) : (
-            <EmptyState icon={Newspaper} title="Sem publicações" compact>
-              Fique de olho: os comunicados da organização aparecem aqui.
-            </EmptyState>
-          )}
-        </section>
-
-        <section aria-labelledby="h-atalhos" className="hidden sm:block">
-          <h2 id="h-atalhos" className="sr-only">
-            Atalhos
-          </h2>
-          <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
-            {SHORTCUTS.map(({ href, label, icon: Icon }) => (
-              <li key={href}>
-                <Link href={href} className="card card-hover flex flex-col items-center gap-2 px-2 py-4 text-center">
-                  <Icon className="size-5 text-accent" aria-hidden />
-                  <span className="text-xs font-semibold sm:text-sm">{label}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
+          </section>
+        ) : null}
       </div>
     </>
   );

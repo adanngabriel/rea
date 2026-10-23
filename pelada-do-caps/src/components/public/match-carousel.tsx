@@ -15,7 +15,9 @@ export function MatchCarousel({ children, start = 0, label }: { children: React.
   const slideAt = (i: number) => track.current?.children[i] as HTMLElement | undefined;
   const go = (i: number, behavior: ScrollBehavior = "smooth") => {
     const el = slideAt(i);
-    if (el && track.current) track.current.scrollTo({ left: el.offsetLeft - track.current.offsetLeft, behavior });
+    const first = slideAt(0);
+    // Distância até o primeiro cartão: independe de onde a lista está na página.
+    if (el && first && track.current) track.current.scrollTo({ left: el.offsetLeft - first.offsetLeft, behavior });
   };
 
   useEffect(() => {

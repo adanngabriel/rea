@@ -35,7 +35,7 @@ export function FeaturedMatch({ s, match, next = true }: { s: Snapshot; match: M
     >
       <div className="mb-5 flex items-center justify-between gap-2">
         <p className="eyebrow text-accent">{heading} • {matchStageLabel(s, match)}</p>
-        <StatusBadge status={match.status} />
+        {match.status !== "scheduled" ? <StatusBadge status={match.status} /> : null}
       </div>
       <div className="flex items-center gap-3 sm:gap-8">
         <Side team={home} />

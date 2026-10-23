@@ -15,7 +15,7 @@ export default async function DocumentsPage() {
     .filter((g) => g.docs.length);
   return (
     <>
-      <PageHeader title="Regulamento e documentos" eyebrow="Documentos oficiais" />
+      <PageHeader title="Regulamento e documentos" />
       <div className="container-page space-y-8 py-8">
         {groups.length === 0 ? (
           <EmptyState icon={FileText} title="Nenhum documento publicado">

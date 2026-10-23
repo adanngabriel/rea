@@ -18,7 +18,7 @@ export default async function PlayersPage() {
   const entries = rosterEntries(s).filter((e) => e.player.active);
   return (
     <>
-      <PageHeader title="Jogadores" eyebrow={s.edition.name} />
+      <PageHeader title="Jogadores" />
       <div className="container-page py-8">
         {entries.length === 0 ? (
           <EmptyState icon={Users} title="Inscrições em andamento">

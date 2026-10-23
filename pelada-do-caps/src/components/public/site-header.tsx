@@ -1,10 +1,10 @@
 "use client";
 
-import { Menu, X } from "lucide-react";
+import { ChevronRight, Home, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { BOTTOM_NAV, isActive, MORE_NAV, PRIMARY_NAV } from "./nav-items";
+import { BOTTOM_NAV, isActive, NAV_GROUPS, PRIMARY_NAV } from "./nav-items";
 
 export function SiteHeader({ brand }: { brand: React.ReactNode }) {
   const pathname = usePathname();
@@ -64,20 +64,28 @@ export function SiteHeader({ brand }: { brand: React.ReactNode }) {
             </button>
           </div>
           <nav aria-label="Menu completo" className="container-page flex-1 overflow-y-auto pb-28 pt-2">
-            <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {[...PRIMARY_NAV, ...MORE_NAV].map(({ href, label, icon: Icon }) => (
-                <li key={href}>
-                  <Link
-                    href={href}
-                    aria-current={isActive(pathname, href) ? "page" : undefined}
-                    className="flex min-h-[4.5rem] flex-col justify-between gap-2 rounded-2xl border border-line bg-surface p-3 text-sm font-semibold text-ink/90 transition active:scale-[0.97] active:bg-surface-2 aria-[current=page]:border-brand aria-[current=page]:bg-brand/15 aria-[current=page]:text-accent"
-                  >
-                    <Icon className="size-5 text-accent" aria-hidden />
-                    <span className="leading-tight">{label}</span>
-                  </Link>
-                </li>
+            <div className="grid gap-6 sm:grid-cols-3">
+              {[{ title: "", items: [{ href: "/", label: "Início", icon: Home }] }, ...NAV_GROUPS].map((group) => (
+                <section key={group.title} aria-label={group.title || "Início"}>
+                  {group.title ? <h2 className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-subtle">{group.title}</h2> : null}
+                  <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
+                    {group.items.map(({ href, label, icon: Icon }) => (
+                      <li key={href}>
+                        <Link
+                          href={href}
+                          aria-current={isActive(pathname, href) ? "page" : undefined}
+                          className="flex min-h-12 items-center gap-3 px-4 text-[0.95rem] font-medium text-ink/90 active:bg-surface-2 aria-[current=page]:text-accent"
+                        >
+                          <Icon className="size-[1.1rem] text-muted" aria-hidden />
+                          <span className="flex-1">{label}</span>
+                          <ChevronRight className="size-4 text-subtle" aria-hidden />
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
               ))}
-            </ul>
+            </div>
           </nav>
         </div>
       ) : null}

@@ -32,7 +32,7 @@ export default async function HallPage() {
   );
   return (
     <>
-      <PageHeader title="Hall dos campeões" eyebrow="Torneio da Pelada do Caps">
+      <PageHeader title="Hall dos campeões">
         A história de todas as edições.
       </PageHeader>
       <div className="container-page py-8">

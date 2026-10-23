@@ -17,7 +17,7 @@ export default async function TeamsPage() {
   const standings = computeStandings(s.teams, s.matches, s.events, s.rules);
   return (
     <>
-      <PageHeader title="Times" eyebrow={s.edition.name} />
+      <PageHeader title="Times" />
       <div className="container-page py-8">
         {s.teams.length === 0 ? (
           <EmptyState icon={Shield} title="Times em breve">

@@ -17,7 +17,7 @@ export default async function CardsPage() {
   return (
     <>
       <LiveRefresher tables={["match_events", "matches"]} />
-      <PageHeader title="Cartões e suspensões" eyebrow={s.edition.name} />
+      <PageHeader title="Cartões e suspensões" />
       <div className="container-page space-y-6 py-8">
         <section className="card p-5 text-sm" aria-labelledby="h-regras">
           <h2 id="h-regras" className="eyebrow mb-2">
