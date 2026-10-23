@@ -1,9 +1,10 @@
-import { Medal } from "lucide-react";
+import { ChevronRight, Medal, Trophy } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AwardCard, tournamentPrizes } from "@/components/public/award-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/section";
+import { championOf } from "@/domain/bracket";
 import { indexSnapshot } from "@/domain/snapshot";
 import { currentSnapshot } from "@/lib/data/require";
 
@@ -14,12 +15,20 @@ export default async function PrizesPage() {
   const s = await currentSnapshot();
   const ix = indexSnapshot(s);
   const prizes = tournamentPrizes(s.awards);
+  const champion = championOf(s);
   return (
     <>
       <PageHeader title="Premiações">
         O que está em jogo no torneio. Os vencedores aparecem aqui ao fim do campeonato.
       </PageHeader>
       <div className="container-page space-y-6 py-6 sm:py-10">
+        {champion ? (
+          <Link href="/campeao" className="card card-hover flex items-center gap-3 border-gold/40 p-4">
+            <Trophy className="size-6 text-gold" aria-hidden />
+            <span className="flex-1 font-semibold">Campeão: {ix.team(champion.championId)?.name}</span>
+            <ChevronRight className="size-4 text-subtle" aria-hidden />
+          </Link>
+        ) : null}
       {prizes.length ? (
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {prizes.map((a) => (
