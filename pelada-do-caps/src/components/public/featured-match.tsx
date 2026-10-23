@@ -18,13 +18,14 @@ function Side({ team }: { team: Team | null }) {
   );
 }
 
-/** Destaque da home: próximo jogo ou partida ao vivo. */
-export function FeaturedMatch({ s, match }: { s: Snapshot; match: Match }) {
+/** Destaque da home: partida ao vivo, próximo jogo ou outro jogo da mesma rodada. */
+export function FeaturedMatch({ s, match, next = true }: { s: Snapshot; match: Match; next?: boolean }) {
   const ix = indexSnapshot(s);
   const home = ix.team(match.home_team_id);
   const away = ix.team(match.away_team_id);
   const live = isLive(match);
   const score = scoreOf(match, s.events);
+  const heading = live ? "Acontecendo agora" : match.status === "finished" ? "Resultado" : next ? "Próximo jogo" : "Na sequência";
   return (
     <article
       className={`card relative overflow-hidden p-5 sm:p-8 ${live ? "border-live/50" : ""}`}
@@ -33,7 +34,7 @@ export function FeaturedMatch({ s, match }: { s: Snapshot; match: Match }) {
       }}
     >
       <div className="mb-5 flex items-center justify-between gap-2">
-        <p className="eyebrow text-accent">{live ? "Acontecendo agora" : "Próximo jogo"} • {matchStageLabel(s, match)}</p>
+        <p className="eyebrow text-accent">{heading} • {matchStageLabel(s, match)}</p>
         <StatusBadge status={match.status} />
       </div>
       <div className="flex items-center gap-3 sm:gap-8">

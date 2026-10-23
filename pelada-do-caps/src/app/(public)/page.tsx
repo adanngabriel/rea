@@ -18,12 +18,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { qualificationMarks } from "@/domain/bracket";
 import { indexSnapshot } from "@/domain/snapshot";
-import { countdownTarget, featuredMatch, finishedMatches, upcomingMatches } from "@/domain/schedule";
+import { countdownTarget, featuredMatch, finishedMatches, orderedMatches, upcomingMatches } from "@/domain/schedule";
 import { computeStandings } from "@/domain/standings";
 import { computePlayerStats, leaderboard } from "@/domain/stats";
 import { AwardCard, tournamentPrizes } from "@/components/public/award-card";
 import { Countdown } from "@/components/public/countdown";
 import { FeaturedMatch } from "@/components/public/featured-match";
+import { MatchCarousel } from "@/components/public/match-carousel";
 import { HighlightCard } from "@/components/public/highlight-card";
 import { LiveRefresher } from "@/components/public/live-refresher";
 import { MatchCard } from "@/components/public/match-card";
@@ -65,7 +66,9 @@ export default async function HomePage() {
   const mvp = leaderboard(s, "mvp", stats)[0];
   const leaderRow = standings.find((r) => r.played > 0) ? standings[0] : null;
   const results = finishedMatches(s).slice(0, 4);
-  const upcoming = upcomingMatches(s).filter((m) => m.id !== featured?.id).slice(0, 4);
+  // O destaque desliza pelos jogos da mesma rodada, começando no jogo da vez.
+  const roundMatches = featured ? orderedMatches(s).filter((m) => m.status !== "cancelled" && (featured.round_id ? m.round_id === featured.round_id : m.id === featured.id)) : [];
+  const upcoming = upcomingMatches(s).filter((m) => !roundMatches.includes(m)).slice(0, 4);
   const prizes = tournamentPrizes(s.awards);
   const ix = indexSnapshot(s);
   const { edition } = s;
@@ -122,7 +125,11 @@ export default async function HomePage() {
         {/* Antes do torneio a contagem é o destaque; depois, o jogo da vez. */}
         {!featured && countdown ? <Countdown target={countdown.at} kind={countdown.kind} /> : null}
         {featured ? (
-          <FeaturedMatch s={s} match={featured} />
+          <MatchCarousel start={roundMatches.indexOf(featured)} label="Jogos da rodada">
+            {roundMatches.map((m) => (
+              <FeaturedMatch key={m.id} s={s} match={m} next={m.id === featured.id} />
+            ))}
+          </MatchCarousel>
         ) : (
           <EmptyState icon={CalendarX2} title="Agenda em breve" compact>
             Os confrontos e horários serão divulgados pela organização.
